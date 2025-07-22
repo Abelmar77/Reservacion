@@ -1,0 +1,89 @@
+/* --- Variables de Color (Tu paleta) --- */
+:root {
+    --color-principal: #b57390; /* Mauve para botones y títulos */
+    --color-secundario: #a79ac5; /* Lavanda para detalles como el foco */
+    --color-acento: #d4b5c3;     /* Rosa pálido para fondos suaves */
+    --color-fondo: #f4f4f9;      /* Un fondo casi blanco para buen contraste */
+    --color-texto: #333;
+}
+
+/* --- Estilos Generales --- */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+}
+
+/* --- Contenedor del Login --- */
+.login-container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 350px;
+    box-sizing: border-box;
+}
+
+/* --- Logo --- */
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: var(--color-principal);
+}
+
+/* --- Campos de texto (Label + Input) --- */
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 300;
+    font-size: 0.9em;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--color-secundario);
+}
+
+/* --- Botón de Login --- */
+.login-button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--color-principal);
+    color: white;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: #a06580; /* Un tono más oscuro del principal */
+}
