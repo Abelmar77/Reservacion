@@ -162,6 +162,11 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
             consultorioSelect.value = '4'; 
         }
     }
+    
+    // Llamada final para aplicar todas las reglas visuales
+    actualizarCamposAdmin(); 
+    modal.style.display = 'block';
+}
 
 function cerrarModal() { modal.style.display = 'none'; }
 function mostrarAlerta(mensaje) { alertaMensaje.textContent = mensaje; alertaModal.style.display = 'block'; }
@@ -203,8 +208,8 @@ function actualizarCamposAdmin() {
         ocultarCheckbox.disabled = true;
     } else {
         ocultarCheckbox.disabled = false;
-        // No desmarcamos automáticamente para permitir ocultar citas físicas.
-        // Si el usuario quiere desmarcar, puede hacerlo manualmente.
+        // Si no está bloqueado, su estado depende de si el admin quiere ocultar una cita física
+        // No lo desmarcamos automáticamente, para dar flexibilidad.
     }
 }
 
