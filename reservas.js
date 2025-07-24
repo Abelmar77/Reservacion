@@ -104,6 +104,7 @@ function filtrarYRenderizarEventos() {
 }
 
 // --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
+
 function handleDateClick(info) { abrirModal(info.dateStr); }
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
 function handleEventClick(info) { abrirModal(null, info.event); }
@@ -136,7 +137,7 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         empleadoSelectorDiv.style.display = 'none';
     }
 
-    if (evento) {
+    if (evento) { // Editando
         modalTitulo.textContent = 'Editar Reservación';
         const props = evento.extendedProps;
         document.getElementById('id_reservacion').value = evento.id;
@@ -147,23 +148,20 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         if (userRole === 'administrador' || currentUser.id === props.id_empleado) {
             eliminarBtn.style.display = 'inline-block';
         }
-        // Asegura que la opción Online esté si es necesario
-        actualizarCamposAdmin();
+        // Llamada para asegurar que el select de consultorios esté correcto
+        actualizarCamposAdmin(); 
         consultorioSelect.value = props.id_consultorio;
-
-    } else {
+    } else { // Creando
         modalTitulo.textContent = 'Nueva Reservación';
         const fechaInicioObj = new Date(fechaInicio);
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
         if (userRole === 'administrador') {
             empleadoSelect.value = currentUser.id;
-            consultorioSelect.value = '1'; // Resetea a opción física por defecto
+            // CORRECCIÓN: Selecciona "Online" por defecto al crear
+            actualizarCamposAdmin(); // Asegura que la opción "Online" exista
+            consultorioSelect.value = '4'; 
         }
     }
-    
-    actualizarCamposAdmin(); // Llama a la función para establecer el estado inicial correcto
-    modal.style.display = 'block';
-}
 
 function cerrarModal() { modal.style.display = 'none'; }
 function mostrarAlerta(mensaje) { alertaMensaje.textContent = mensaje; alertaModal.style.display = 'block'; }
@@ -185,7 +183,7 @@ function actualizarCamposAdmin() {
     const empleadoSeleccionadoId = empleadoSelect.value;
     const perfilSeleccionado = todosLosPerfiles.find(p => p.id === empleadoSeleccionadoId);
 
-    // Regla 1: Opción "Online" solo visible para empleados que son admins
+    // Regla 1: Opción "Online"
     if (perfilSeleccionado && perfilSeleccionado.role === 'administrador') {
         if (!onlineOption) consultorioSelect.add(new Option('Online', '4'));
     } else {
@@ -199,14 +197,14 @@ function actualizarCamposAdmin() {
     const esAdminParaSi = empleadoSeleccionadoId === currentUser.id;
     ocultarDiv.style.display = esAdminParaSi ? 'block' : 'none';
 
-    // NUEVA REGLA 3: Si se elige "Online", se fuerza y bloquea "Ocultar"
+    // CORRECCIÓN: Regla 3 ("Online" fuerza "Ocultar")
     if (consultorioSelect.value === '4') {
         ocultarCheckbox.checked = true;
-        ocultarCheckbox.disabled = true; // Bloquea el checkbox
+        ocultarCheckbox.disabled = true;
     } else {
-        ocultarCheckbox.disabled = false; // Desbloquea el checkbox
-        // Si no está bloqueado, su estado depende de si el admin quiere ocultar una cita física
-        // No lo desmarcamos automáticamente, para dar flexibilidad.
+        ocultarCheckbox.disabled = false;
+        // No desmarcamos automáticamente para permitir ocultar citas físicas.
+        // Si el usuario quiere desmarcar, puede hacerlo manualmente.
     }
 }
 
