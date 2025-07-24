@@ -188,6 +188,6 @@ input[type="checkbox"]#ocultar-reserva-checkbox:checked::before { left: 20px; }
 }
 /* --- Estilo para el botón de la vista activa del calendario --- */
 .fc-button-active {
-    background-color: var(--color-principal) !important; /* Usa tu color principal */
+    background-color: var(--color-secundario) !important; /* Color cambiado a secundario (#a79ac5) */
     color: white !important;
 }
