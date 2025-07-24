@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="body-centered">
 
     <div class="login-container">
         <img src="logo.png" alt="Logo Be Myself Psicología" class="logo">
@@ -31,6 +31,15 @@
         </form>
     </div>
 
+    <div id="alerta-modal" class="modal">
+        <div class="alerta-contenido">
+            <h3>⚠️ Atención</h3>
+            <p id="alerta-mensaje"></p>
+            <button id="alerta-cerrar-btn" class="btn-primary">Entendido</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
