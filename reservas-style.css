@@ -4,6 +4,7 @@ body {
     font-family: sans-serif;
     background-color: #f8f8f8;
     color: #333;
+    margin: 0;
 }
 nav {
     background-color: #e9e9e9;
@@ -23,7 +24,7 @@ nav ul {
 }
 nav ul li { margin-left: 1em; }
 nav ul li:first-child { margin-left: 0; }
-nav a, nav button { text-decoration: none; color: #555; }
+nav a, nav button { text-decoration: none; color: #555; font-size: 1em; }
 nav strong { color: #b57390; font-weight: bold; }
 
 #calendario {
@@ -79,7 +80,8 @@ nav strong { color: #b57390; font-weight: bold; }
 .modal-contenido button.contrast { background-color: #c93a49; }
 .modal-contenido button:hover { filter: brightness(110%); }
 .modal-contenido .grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em;
+    display: grid; grid-template-columns: 1fr; /* Una sola columna en móviles */
+    gap: 0 1em;
 }
 
 .alerta-contenido {
@@ -130,3 +132,52 @@ input[type="checkbox"]#ocultar-reserva-checkbox::before {
 }
 input[type="checkbox"]#ocultar-reserva-checkbox:checked { background: #b57390; }
 input[type="checkbox"]#ocultar-reserva-checkbox:checked::before { left: 20px; }
+
+
+/* --- NUEVA SECCIÓN: ESTILOS PARA MÓVILES --- */
+@media (max-width: 768px) {
+    body {
+        padding: 0.5em; /* Menos padding en los bordes */
+    }
+
+    nav {
+        flex-direction: column; /* Apila los elementos de la navegación */
+        gap: 10px;
+    }
+    
+    #calendario {
+        padding: 0.5em;
+    }
+
+    /* Reduce el tamaño de los textos de la barra superior del calendario */
+    .fc-header-toolbar {
+        font-size: 0.75em;
+        flex-direction: column; /* Apila la barra del calendario */
+        gap: 10px;
+    }
+
+    /* Oculta el texto en los botones de navegación para ahorrar espacio */
+    .fc-prev-button .fc-icon,
+    .fc-next-button .fc-icon {
+        font-size: 1.5em;
+    }
+    
+    .fc-event-title {
+        font-size: 0.8em; /* Letra más pequeña en los eventos */
+    }
+
+    /* Cambia los días a formato corto para ahorrar espacio */
+    .fc .fc-col-header-cell-cushion {
+        font-size: 0.8em;
+    }
+
+    .modal-contenido {
+        width: 95%;
+        margin: 5% auto; /* Menos margen superior en móviles */
+        padding: 15px;
+    }
+
+    #nueva-reserva-btn {
+        width: 90%;
+    }
+}
