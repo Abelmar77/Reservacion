@@ -57,13 +57,27 @@ async function verificarSesion() {
 
 function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
+
+    // Decide qué vista mostrar basado en el ancho de la pantalla
+    const isMobile = window.innerWidth <= 768;
+    const defaultView = isMobile ? 'listWeek' : 'timeGridWeek'; // 'listWeek' para móvil, 'timeGridWeek' para escritorio
+
     calendario = new FullCalendar.Calendar(calendarioEl, {
-        initialView: 'timeGridWeek',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-        locale: 'es', editable: true, selectable: true,
-        slotMinTime: '08:00:00', slotMaxTime: '22:00:00',
+        initialView: defaultView, // Vista inicial inteligente
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,timeGridWeek,listWeek' // Añade la opción de vista de lista
+        },
+        locale: 'es', 
+        editable: true, 
+        selectable: true,
+        slotMinTime: '08:00:00', 
+        slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
-        select: handleTimeSelect, eventClick: handleEventClick, eventDrop: handleEventDrop,
+        select: handleTimeSelect, 
+        eventClick: handleEventClick, 
+        eventDrop: handleEventDrop,
     });
     calendario.render();
 }
