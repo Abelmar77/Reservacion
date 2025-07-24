@@ -107,7 +107,14 @@ function filtrarYRenderizarEventos() {
 function handleDateClick(info) { abrirModal(info.dateStr); }
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
 function handleEventClick(info) { abrirModal(null, info.event); }
-async function handleEventDrop(info) { /* ...código sin cambios... */ }
+async function handleEventDrop(info) {
+    if (!confirm("¿Mover esta reservación?")) { info.revert(); return; }
+    const { error } = await supabaseClient.from('reservaciones').update({
+        fecha_inicio: info.event.start.toISOString(),
+        fecha_fin: info.event.end.toISOString()
+    }).eq('id', info.event.id);
+    if (error) { mostrarAlerta("No tienes permiso para mover esta reservación."); info.revert(); }
+}
 
 
 // --- LÓGICA DE MODALES ---
@@ -248,20 +255,47 @@ async function handleFormSubmit(e) {
     }
 }
 
-function handleEliminar() { /* ...código sin cambios... */ }
-async function handleLogout(event) { /* ...código sin cambios... */ }
+function handleEliminar() {
+    idParaEliminar = document.getElementById('id_reservacion').value;
+    if (idParaEliminar) confirmarModal.style.display = 'block';
+}
+
+async function handleLogout(event) {
+    event.preventDefault();
+    await supabaseClient.auth.signOut();
+    window.location.href = 'index.html';
+}
 
 function configurarEventListeners() {
     cerrarModalBtn.onclick = cerrarModal;
     alertaCerrarBtn.onclick = cerrarAlerta;
     cancelarEliminarBtn.onclick = () => { confirmarModal.style.display = 'none'; idParaEliminar = null; };
-    confirmarEliminarBtn.onclick = async () => { /* ...código sin cambios... */ };
-    window.onclick = (event) => { /* ...código sin cambios... */ };
+  confirmarEliminarBtn.onclick = async () => {
+        if (!idParaEliminar) return;
+        const { error } = await supabaseClient.from('reservaciones').delete().eq('id', idParaEliminar);
+        confirmarModal.style.display = 'none';
+        if (error) { mostrarAlerta("Error al eliminar: " + error.message); }
+        else {
+            cerrarModal();
+            await cargarTodasLasReservaciones();
+            filtrarYRenderizarEventos();
+        }
+        idParaEliminar = null;
+    };
+    window.onclick = (event) => {
+        if (event.target == modal) cerrarModal();
+        if (event.target == alertaModal) cerrarAlerta();
+        if (event.target == confirmarModal) confirmarModal.style.display = 'none';
+    };
     eventoForm.onsubmit = handleFormSubmit;
     eliminarBtn.onclick = handleEliminar;
     logoutBtn.addEventListener('click', handleLogout);
     nuevaReservaBtn.onclick = () => abrirModal(new Date());
-    toggleViewBtn.onclick = () => { /* ...código sin cambios... */ };
+      toggleViewBtn.onclick = () => {
+        vistaActual = (vistaActual === 'todos') ? 'propias' : 'todos';
+        toggleViewBtn.textContent = (vistaActual === 'todos') ? 'Ver solo mis reservaciones' : 'Ver todas las reservaciones';
+        filtrarYRenderizarEventos();
+    };
     
     // Asignamos los listeners a los selectores de admin
     const consultorioSelect = document.getElementById('id_consultorio');
@@ -269,6 +303,10 @@ function configurarEventListeners() {
     consultorioSelect.addEventListener('change', actualizarCamposAdmin);
     empleadoSelect.addEventListener('change', actualizarCamposAdmin);
 }
+function formatarFechaParaInput(fecha) {
+    if (!fecha) return '';
+    const d = new Date(fecha);
+    return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+}
 
-function formatarFechaParaInput(fecha) { /* ...código sin cambios... */ }
 document.addEventListener('DOMContentLoaded', inicializar);
