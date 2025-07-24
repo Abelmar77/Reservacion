@@ -58,17 +58,14 @@ async function verificarSesion() {
 function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
 
-    // Decide qué vista mostrar basado en el ancho de la pantalla
-    const isMobile = window.innerWidth <= 768;
-    const defaultView = isMobile ? 'listWeek' : 'timeGridWeek'; // 'listWeek' para móvil, 'timeGridWeek' para escritorio
-
     calendario = new FullCalendar.Calendar(calendarioEl, {
-        initialView: defaultView, // Vista inicial inteligente
+        initialView: 'timeGridWeek', // Vuelve a la vista de semana como predeterminada
         headerToolbar: { 
             left: 'prev,next today', 
             center: 'title', 
-            right: 'dayGridMonth,timeGridWeek,listWeek' // Añade la opción de vista de lista
+            right: 'dayGridMonth,timeGridWeek,timeGridDay' // Se quita la opción de lista
         },
+        height: 'auto', // Hace que el calendario sea más alto y se ajuste al contenido
         locale: 'es', 
         editable: true, 
         selectable: true,
