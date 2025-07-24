@@ -1,25 +1,61 @@
-/* --- Variables de Color (Tu paleta) --- */
+/* --- 1. Variables Globales y Estilos Base --- */
 :root {
-    --color-principal: #b57390; /* Mauve para botones y títulos */
-    --color-secundario: #a79ac5; /* Lavanda para detalles como el foco */
-    --color-acento: #d4b5c3;     /* Rosa pálido para fondos suaves */
-    --color-fondo: #f4f4f9;      /* Un fondo casi blanco para buen contraste */
+    --color-principal: #b57390;
+    --color-secundario: #a79ac5;
+    --color-acento: #d4b5c3;
+    --color-fondo: #f8f8f8;
     --color-texto: #333;
+    --color-borde-sutil: #e9e9e9;
+    --color-rojo-peligro: #c93a49;
+    --color-gris-neutro: #6c757d;
 }
 
-/* --- Estilos Generales --- */
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: sans-serif;
     background-color: var(--color-fondo);
     color: var(--color-texto);
     margin: 0;
+    padding: 1.5em;
+}
+
+.body-centered {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Ocupa toda la altura de la pantalla */
+    height: 100vh;
+    padding: 0;
 }
 
-/* --- Contenedor del Login --- */
+h1, h2, h3 {
+    color: var(--color-principal);
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 1em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--color-secundario);
+    box-shadow: 0 0 0 2px rgba(167, 154, 197, 0.25);
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    font-weight: bold;
+}
+
+
+/* --- 2. Estilos de Páginas Específicas --- */
+
+/* --- Página de Login --- */
 .login-container {
     background-color: white;
     padding: 40px;
@@ -28,62 +64,112 @@ body {
     text-align: center;
     width: 100%;
     max-width: 350px;
-    box-sizing: border-box;
 }
-
-/* --- Logo --- */
-.logo {
-    width: 150px;
-    margin-bottom: 20px;
-}
-
-h2 {
-    margin-top: 0;
-    margin-bottom: 25px;
-    color: var(--color-principal);
-}
-
-/* --- Campos de texto (Label + Input) --- */
-.input-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 300;
-    font-size: 0.9em;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
-    transition: border-color 0.3s;
-}
-
-.input-group input:focus {
-    outline: none;
-    border-color: var(--color-secundario);
-}
-
-/* --- Botón de Login --- */
+.login-container .logo { width: 150px; margin-bottom: 20px; }
 .login-button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
     background-color: var(--color-principal);
     color: white;
     font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    width: 100%;
 }
 
-.login-button:hover {
-    background-color: #a06580; /* Un tono más oscuro del principal */
+/* --- Panel de Administrador --- */
+article {
+    background-color: white;
+    border: 1px solid var(--color-borde-sutil);
+    box-shadow: none;
+    padding: 1.5em;
+    border-radius: 8px;
+    margin-bottom: 1.5em;
 }
+#submit-button, .edit-btn {
+    background-color: var(--color-principal);
+    color: white;
+}
+#cancel-button {
+    background-color: var(--color-secundario);
+    color: white;
+}
+
+/* --- Página de Reservaciones --- */
+nav {
+    background-color: #e9e9e9;
+    padding: 0.8em 1em;
+    border-radius: 6px;
+    margin-bottom: 1.5em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#calendario {
+    max-width: 1100px;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+    padding: 1em;
+}
+#nueva-reserva-btn {
+    background-color: var(--color-acento);
+    color: var(--color-texto);
+    font-size: 1em;
+}
+#toggle-view-btn {
+    background-color: var(--color-secundario);
+    color: white;
+    font-size: 0.9em;
+}
+
+/* --- Estilos del Calendario --- */
+.fc-button {
+    background-color: var(--color-acento) !important;
+    color: var(--color-texto) !important;
+    border: none !important;
+}
+.fc-today-button {
+    background-color: var(--color-secundario) !important;
+    color: white !important;
+}
+.fc-event {
+    border: none !important;
+    color: white !important;
+    font-size: 0.9em;
+}
+
+
+/* --- 3. Estilos de Modales --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+.modal-contenido, .alerta-contenido {
+    background-color: white;
+    margin: 10% auto;
+    padding: 25px 30px;
+    border-top: 5px solid var(--color-principal);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.modal-cerrar {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- Contenido y Botones de Modales --- */
+.alerta-contenido { text-align: center; }
+.alerta-contenido h3 { color: var(--color-texto); }
+.alerta-contenido div { display: flex; justify-content: center; gap: 15px; }
+
+#guardar-btn, #alerta-cerrar-btn { background-color: var(--color-principal); color: white; }
+#cancelar-eliminar-btn { background-color: var(--color-gris-neutro); color: white; }
+#eliminar-btn, #confirmar-eliminar-btn, .delete-btn { background-color: var(--color-rojo-peligro); color: white; }
