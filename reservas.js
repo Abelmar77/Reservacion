@@ -59,19 +59,23 @@ function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
 
     calendario = new FullCalendar.Calendar(calendarioEl, {
-        initialView: 'timeGridWeek', // Vuelve a la vista de semana como predeterminada
+        initialView: 'timeGridWeek',
         headerToolbar: { 
             left: 'prev,next today', 
             center: 'title', 
-            right: 'dayGridMonth,timeGridWeek,timeGridDay' // Se quita la opción de lista
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        height: 'auto', // Hace que el calendario sea más alto y se ajuste al contenido
+        height: 'auto',
         locale: 'es', 
         editable: true, 
         selectable: true,
         slotMinTime: '08:00:00', 
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
+        
+        // --- LÍNEA AÑADIDA ---
+        dateClick: handleDateClick, // Se activa con un toque/clic simple en un horario
+
         select: handleTimeSelect, 
         eventClick: handleEventClick, 
         eventDrop: handleEventDrop,
@@ -169,33 +173,53 @@ function cerrarAlerta() { alertaModal.style.display = 'none'; }
 
 async function handleFormSubmit(e) {
     e.preventDefault();
-    const id = document.getElementById('id_reservacion').value;
-    const fechaInicio = document.getElementById('fecha_inicio').value;
-    const fechaFin = document.getElementById('fecha_fin').value;
+
+    const fechaInicioValue = document.getElementById('fecha_inicio').value;
     const idConsultorio = document.getElementById('id_consultorio').value;
-    
-    if ((new Date(fechaFin) - new Date(fechaInicio)) / 60000 !== 60) { mostrarAlerta('La duración debe ser de 1 hora.'); return; }
-    if (new Date(fechaInicio).getHours() < 8 || new Date(fechaInicio).getHours() >= 22) { mostrarAlerta('El horario debe ser entre 8 AM y 10 PM.'); return; }
+    const id = document.getElementById('id_reservacion').value;
+
+    // --- CÁLCULO AUTOMÁTICO DE LA FECHA FIN ---
+    const fechaInicioObj = new Date(fechaInicioValue);
+    const fechaFinObj = new Date(fechaInicioObj.getTime() + 3600000); // Suma 1 hora en milisegundos
+
+    // --- VALIDACIONES RESTANTES ---
+    const horaInicio = fechaInicioObj.getHours();
+    if (horaInicio < 8 || horaInicio >= 22) {
+        mostrarAlerta('Las reservaciones solo pueden hacerse entre las 8:00 AM y las 10:00 PM.');
+        return;
+    }
 
     try {
-        let query = supabaseClient.from('reservaciones').select('id', { count: 'exact' }).eq('id_consultorio', idConsultorio)
-            .lt('fecha_inicio', new Date(fechaFin).toISOString()).gt('fecha_fin', new Date(fechaInicio).toISOString());
-        if (id) query = query.neq('id', id);
+        let query = supabaseClient
+            .from('reservaciones')
+            .select('id', { count: 'exact' })
+            .eq('id_consultorio', idConsultorio)
+            .lt('fecha_inicio', fechaFinObj.toISOString())
+            .gt('fecha_fin', fechaInicioObj.toISOString());
+
+        if (id) {
+            query = query.neq('id', id);
+        }
         const { count, error } = await query;
         if (error) throw error;
-        if (count > 0) { mostrarAlerta('Este horario ya está ocupado para este consultorio.'); return; }
-    } catch (error) { mostrarAlerta('Error al verificar disponibilidad: ' + error.message); return; }
+        if (count > 0) {
+            mostrarAlerta('Este horario ya está ocupado para este consultorio.');
+            return;
+        }
+    } catch (error) {
+        mostrarAlerta('Error al verificar disponibilidad: ' + error.message);
+        return;
+    }
 
+    // --- GUARDADO DE LA RESERVACIÓN ---
     let empleadoId = (userRole === 'administrador') ? document.getElementById('id_empleado_seleccionado').value : currentUser.id;
-    const esOculto = document.getElementById('ocultar-reserva-checkbox').checked && userRole === 'administrador' && empleadoId === currentUser.id;
-    
     const datosCita = {
         titulo: document.getElementById('titulo').value,
         id_consultorio: idConsultorio,
-        fecha_inicio: new Date(fechaInicio).toISOString(),
-        fecha_fin: new Date(fechaFin).toISOString(),
+        fecha_inicio: fechaInicioObj.toISOString(),
+        fecha_fin: fechaFinObj.toISOString(), // Usa la fecha de fin calculada
         id_empleado: empleadoId,
-        oculto: esOculto,
+        oculto: document.getElementById('ocultar-reserva-checkbox').checked && userRole === 'administrador' && empleadoId === currentUser.id,
     };
 
     const { error } = id ? await supabaseClient.from('reservaciones').update(datosCita).eq('id', id)
@@ -218,6 +242,10 @@ async function handleLogout(event) {
     event.preventDefault();
     await supabaseClient.auth.signOut();
     window.location.href = 'index.html';
+}
+
+function handleDateClick(info) {
+    abrirModal(info.dateStr);
 }
 
 function configurarEventListeners() {
@@ -250,22 +278,13 @@ function configurarEventListeners() {
         toggleViewBtn.textContent = (vistaActual === 'todos') ? 'Ver solo mis reservaciones' : 'Ver todas las reservaciones';
         filtrarYRenderizarEventos();
     };
-    document.getElementById('fecha_inicio').addEventListener('change', () => {
-        const fechaInicioInput = document.getElementById('fecha_inicio');
-        const fechaFinInput = document.getElementById('fecha_fin');
-        if (fechaInicioInput.value) {
-            const fechaFinObj = new Date(new Date(fechaInicioInput.value).getTime() + 3600000);
-            fechaFinInput.value = formatarFechaParaInput(fechaFinObj);
-        }
-    });
 
-    // --- NUEVA LÓGICA AÑADIDA ---
+    // La lógica para la fecha de fin automática se ha eliminado de aquí.
+
     const consultorioSelect = document.getElementById('id_consultorio');
     consultorioSelect.addEventListener('change', () => {
-        // Esta regla solo se aplica si el usuario es administrador
         if (userRole === 'administrador') {
             const ocultarCheckbox = document.getElementById('ocultar-reserva-checkbox');
-            // Si el valor seleccionado es '4' (Online), marca la casilla. De lo contrario, la desmarca.
             if (consultorioSelect.value === '4') {
                 ocultarCheckbox.checked = true;
             } else {
