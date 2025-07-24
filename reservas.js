@@ -139,6 +139,7 @@ async function handleEventDrop(info) {
 
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     eventoForm.reset();
+    document.getElementById('id_reservacion').value = ''; // Limpia el ID al abrir
     eliminarBtn.style.display = 'none';
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
