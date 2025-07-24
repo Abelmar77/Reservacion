@@ -57,9 +57,16 @@ async function verificarSesion() {
 
 function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
+    const isMobile = window.innerWidth <= 768;
+    const defaultView = 'timeGridWeek';
+
     calendario = new FullCalendar.Calendar(calendarioEl, {
-        initialView: 'timeGridWeek',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+        initialView: defaultView,
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
         height: 'auto',
         locale: 'es',
         editable: true,
@@ -67,7 +74,7 @@ function configurarCalendario() {
         slotMinTime: '08:00:00',
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
-       dateClick: handleDateClick, // Se activa con un toque/clic simple
+        dateClick: handleDateClick,
         select: handleTimeSelect,
         eventClick: handleEventClick,
         eventDrop: handleEventDrop,
@@ -103,7 +110,6 @@ function filtrarYRenderizarEventos() {
     calendario.addEventSource(eventosParaCalendario);
 }
 
-// --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
 function handleDateClick(info) {
     abrirModal(info.dateStr);
 }
@@ -115,24 +121,31 @@ function handleEventClick(info) {
 }
 
 async function handleEventDrop(info) {
-    if (!confirm("¿Mover esta reservación?")) { info.revert(); return; }
+    const confirmacion = await mostrarConfirmacion("¿Estás seguro de que quieres mover esta reservación?");
+    if (!confirmacion) {
+        info.revert();
+        return;
+    }
     const { error } = await supabaseClient.from('reservaciones').update({
         fecha_inicio: info.event.start.toISOString(),
-        fecha_fin: info.event.end.toISOString()
+        fecha_fin: new Date(info.event.start.getTime() + 3600000).toISOString()
     }).eq('id', info.event.id);
     if (error) { mostrarAlerta("No tienes permiso para mover esta reservación."); info.revert(); }
+    else {
+        await cargarTodasLasReservaciones();
+        filtrarYRenderizarEventos();
+    }
 }
 
-
-
-// --- LÓGICA DE MODALES ---
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     eventoForm.reset();
     eliminarBtn.style.display = 'none';
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
-    
+    const ocultarDiv = document.getElementById('ocultar-reserva-div');
+    const ocultarCheckbox = document.getElementById('ocultar-reserva-checkbox');
+
     if (userRole === 'administrador') {
         empleadoSelectorDiv.style.display = 'block';
         if (todosLosPerfiles.length > 0) {
@@ -150,18 +163,15 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         document.getElementById('titulo').value = props.titulo;
         consultorioSelect.value = props.id_consultorio;
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(evento.start);
-        document.getElementById('fecha_fin').value = formatarFechaParaInput(evento.end);
         if (userRole === 'administrador') empleadoSelect.value = props.id_empleado;
-        document.getElementById('ocultar-reserva-checkbox').checked = props.oculto;
+        ocultarCheckbox.checked = props.oculto;
         if (userRole === 'administrador' || currentUser.id === props.id_empleado) {
             eliminarBtn.style.display = 'inline-block';
         }
     } else {
         modalTitulo.textContent = 'Nueva Reservación';
         const fechaInicioObj = new Date(fechaInicio);
-        const fechaFinObj = new Date(fechaInicioObj.getTime() + 3600000);
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
-        document.getElementById('fecha_fin').value = formatarFechaParaInput(fechaFinObj);
         if (userRole === 'administrador') empleadoSelect.value = currentUser.id;
     }
     
@@ -228,7 +238,7 @@ function configurarEventListeners() {
     cerrarModalBtn.onclick = cerrarModal;
     alertaCerrarBtn.onclick = cerrarAlerta;
     cancelarEliminarBtn.onclick = () => { confirmarModal.style.display = 'none'; idParaEliminar = null; };
-        confirmarEliminarBtn.onclick = async () => {
+    confirmarEliminarBtn.onclick = async () => {
         if (!idParaEliminar) return;
         const { error } = await supabaseClient.from('reservaciones').delete().eq('id', idParaEliminar);
         confirmarModal.style.display = 'none';
@@ -256,7 +266,7 @@ function configurarEventListeners() {
     };
 
     const consultorioSelect = document.getElementById('id_consultorio');
-        consultorioSelect.addEventListener('change', () => {
+    consultorioSelect.addEventListener('change', () => {
         if (userRole === 'administrador') {
             const ocultarCheckbox = document.getElementById('ocultar-reserva-checkbox');
             if (consultorioSelect.value === '4') {
