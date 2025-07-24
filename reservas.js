@@ -57,27 +57,19 @@ async function verificarSesion() {
 
 function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
-
     calendario = new FullCalendar.Calendar(calendarioEl, {
         initialView: 'timeGridWeek',
-        headerToolbar: { 
-            left: 'prev,next today', 
-            center: 'title', 
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
         height: 'auto',
-        locale: 'es', 
-        editable: true, 
+        locale: 'es',
+        editable: true,
         selectable: true,
-        slotMinTime: '08:00:00', 
+        slotMinTime: '08:00:00',
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
-        
-        // --- LÍNEA AÑADIDA ---
-        dateClick: handleDateClick, // Se activa con un toque/clic simple en un horario
-
-        select: handleTimeSelect, 
-        eventClick: handleEventClick, 
+        dateClick: handleDateClick, // Se activa con un toque/clic simple
+        select: handleTimeSelect,
+        eventClick: handleEventClick,
         eventDrop: handleEventDrop,
     });
     calendario.render();
@@ -111,8 +103,16 @@ function filtrarYRenderizarEventos() {
     calendario.addEventSource(eventosParaCalendario);
 }
 
-function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
-function handleEventClick(info) { abrirModal(null, info.event); }
+// --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
+function handleDateClick(info) {
+    abrirModal(info.dateStr);
+}
+function handleTimeSelect(info) {
+    abrirModal(info.startStr, null, info.endStr);
+}
+function handleEventClick(info) {
+    abrirModal(null, info.event);
+}
 
 async function handleEventDrop(info) {
     if (!confirm("¿Mover esta reservación?")) { info.revert(); return; }
@@ -123,6 +123,9 @@ async function handleEventDrop(info) {
     if (error) { mostrarAlerta("No tienes permiso para mover esta reservación."); info.revert(); }
 }
 
+
+
+// --- LÓGICA DE MODALES ---
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     eventoForm.reset();
     eliminarBtn.style.display = 'none';
@@ -173,51 +176,28 @@ function cerrarAlerta() { alertaModal.style.display = 'none'; }
 
 async function handleFormSubmit(e) {
     e.preventDefault();
-
-    const fechaInicioValue = document.getElementById('fecha_inicio').value;
-    const idConsultorio = document.getElementById('id_consultorio').value;
     const id = document.getElementById('id_reservacion').value;
-
-    // --- CÁLCULO AUTOMÁTICO DE LA FECHA FIN ---
-    const fechaInicioObj = new Date(fechaInicioValue);
-    const fechaFinObj = new Date(fechaInicioObj.getTime() + 3600000); // Suma 1 hora en milisegundos
-
-    // --- VALIDACIONES RESTANTES ---
-    const horaInicio = fechaInicioObj.getHours();
-    if (horaInicio < 8 || horaInicio >= 22) {
-        mostrarAlerta('Las reservaciones solo pueden hacerse entre las 8:00 AM y las 10:00 PM.');
-        return;
-    }
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = new Date(new Date(fechaInicio).getTime() + 3600000).toISOString();
+    const idConsultorio = document.getElementById('id_consultorio').value;
+    
+    if (new Date(fechaInicio).getHours() < 8 || new Date(fechaInicio).getHours() >= 22) { mostrarAlerta('El horario debe ser entre 8 AM y 10 PM.'); return; }
 
     try {
-        let query = supabaseClient
-            .from('reservaciones')
-            .select('id', { count: 'exact' })
-            .eq('id_consultorio', idConsultorio)
-            .lt('fecha_inicio', fechaFinObj.toISOString())
-            .gt('fecha_fin', fechaInicioObj.toISOString());
-
-        if (id) {
-            query = query.neq('id', id);
-        }
+        let query = supabaseClient.from('reservaciones').select('id', { count: 'exact' }).eq('id_consultorio', idConsultorio)
+            .lt('fecha_inicio', fechaFin).gt('fecha_fin', new Date(fechaInicio).toISOString());
+        if (id) query = query.neq('id', id);
         const { count, error } = await query;
         if (error) throw error;
-        if (count > 0) {
-            mostrarAlerta('Este horario ya está ocupado para este consultorio.');
-            return;
-        }
-    } catch (error) {
-        mostrarAlerta('Error al verificar disponibilidad: ' + error.message);
-        return;
-    }
+        if (count > 0) { mostrarAlerta('Este horario ya está ocupado para este consultorio.'); return; }
+    } catch (error) { mostrarAlerta('Error al verificar disponibilidad: ' + error.message); return; }
 
-    // --- GUARDADO DE LA RESERVACIÓN ---
     let empleadoId = (userRole === 'administrador') ? document.getElementById('id_empleado_seleccionado').value : currentUser.id;
     const datosCita = {
         titulo: document.getElementById('titulo').value,
         id_consultorio: idConsultorio,
-        fecha_inicio: fechaInicioObj.toISOString(),
-        fecha_fin: fechaFinObj.toISOString(), // Usa la fecha de fin calculada
+        fecha_inicio: new Date(fechaInicio).toISOString(),
+        fecha_fin: fechaFin,
         id_empleado: empleadoId,
         oculto: document.getElementById('ocultar-reserva-checkbox').checked && userRole === 'administrador' && empleadoId === currentUser.id,
     };
@@ -244,15 +224,11 @@ async function handleLogout(event) {
     window.location.href = 'index.html';
 }
 
-function handleDateClick(info) {
-    abrirModal(info.dateStr);
-}
-
 function configurarEventListeners() {
     cerrarModalBtn.onclick = cerrarModal;
     alertaCerrarBtn.onclick = cerrarAlerta;
     cancelarEliminarBtn.onclick = () => { confirmarModal.style.display = 'none'; idParaEliminar = null; };
-    confirmarEliminarBtn.onclick = async () => {
+        confirmarEliminarBtn.onclick = async () => {
         if (!idParaEliminar) return;
         const { error } = await supabaseClient.from('reservaciones').delete().eq('id', idParaEliminar);
         confirmarModal.style.display = 'none';
@@ -279,10 +255,8 @@ function configurarEventListeners() {
         filtrarYRenderizarEventos();
     };
 
-    // La lógica para la fecha de fin automática se ha eliminado de aquí.
-
     const consultorioSelect = document.getElementById('id_consultorio');
-    consultorioSelect.addEventListener('change', () => {
+        consultorioSelect.addEventListener('change', () => {
         if (userRole === 'administrador') {
             const ocultarCheckbox = document.getElementById('ocultar-reserva-checkbox');
             if (consultorioSelect.value === '4') {
