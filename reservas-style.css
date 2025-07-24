@@ -45,8 +45,13 @@ nav strong { color: #b57390; font-weight: bold; }
 .fc-today-button { background-color: #a79ac5 !important; color: white !important; }
 .fc-today-button:hover { background-color: #9384b0 !important; }
 .fc-event {
-    border: none !important; color: white !important; padding: 0.3em 0.6em !important;
-    border-radius: 4px !important; cursor: pointer !important; margin-bottom: 1px !important;
+    border: none !important; 
+    color: #3f3f3f !important; /* Color nuevo para el texto del evento */
+    font-weight: bold; /* Hacemos el texto un poco más grueso para que resalte */
+    padding: 0.3em 0.6em !important;
+    border-radius: 4px !important; 
+    cursor: pointer !important; 
+    margin-bottom: 1px !important;
 }
 .fc-event-title { font-size: 0.9em; }
 
