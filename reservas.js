@@ -139,7 +139,7 @@ async function handleEventDrop(info) {
 
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     eventoForm.reset();
-    document.getElementById('id_reservacion').value = ''; // Limpia el ID al abrir
+    document.getElementById('id_reservacion').value = '';
     eliminarBtn.style.display = 'none';
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
@@ -157,7 +157,7 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         empleadoSelectorDiv.style.display = 'none';
     }
 
-    if (evento) {
+    if (evento) { // Editando un evento existente
         modalTitulo.textContent = 'Editar Reservación';
         const props = evento.extendedProps;
         document.getElementById('id_reservacion').value = evento.id;
@@ -169,11 +169,16 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         if (userRole === 'administrador' || currentUser.id === props.id_empleado) {
             eliminarBtn.style.display = 'inline-block';
         }
-    } else {
+    } else { // Creando un nuevo evento
         modalTitulo.textContent = 'Nueva Reservación';
         const fechaInicioObj = new Date(fechaInicio);
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
-        if (userRole === 'administrador') empleadoSelect.value = currentUser.id;
+        if (userRole === 'administrador') {
+            empleadoSelect.value = currentUser.id;
+            // --- CAMBIO AÑADIDO ---
+            // Establece "Online" (valor 4) como opción por defecto para el admin
+            consultorioSelect.value = '4';
+        }
     }
     
     actualizarOpcionOnline();
