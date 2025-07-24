@@ -67,7 +67,7 @@ button {
     width: 100%;
     max-width: 350px;
 }
-.login-container .logo { width: 150px; margin-bottom: 20px; }
+.login-container .logo { width: 250px; margin-bottom: 20px; }
 .login-button {
     background-color: var(--color-principal);
     color: white;
