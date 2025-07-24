@@ -18,12 +18,14 @@ body {
     padding: 1.5em;
 }
 
+/* Clase especial para centrar contenido, como en la página de login */
 .body-centered {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Mantiene el centrado de izquierda a derecha */
+    align-items: flex-start;  /* Alinea el contenido en la parte superior */
     height: 100vh;
-    padding: 0;
+    padding-top: 8vh;         /* Añade un margen superior (8% de la altura de la pantalla) */
+    box-sizing: border-box;   /* Asegura que el padding no afecte la altura total */
 }
 
 h1, h2, h3 {
