@@ -188,7 +188,7 @@ function actualizarCamposAdmin() {
     const empleadoSeleccionadoId = empleadoSelect.value;
     const perfilSeleccionado = todosLosPerfiles.find(p => p.id === empleadoSeleccionadoId);
 
-    // Regla 1: Opción "Online"
+    // Regla 1: Visibilidad de la opción "Online"
     if (perfilSeleccionado && perfilSeleccionado.role === 'administrador') {
         if (!onlineOption) consultorioSelect.add(new Option('Online', '4'));
     } else {
@@ -198,18 +198,17 @@ function actualizarCamposAdmin() {
         }
     }
 
-    // Regla 2: Visibilidad de "Ocultar"
+    // Regla 2: Visibilidad del div "Ocultar"
     const esAdminParaSi = empleadoSeleccionadoId === currentUser.id;
     ocultarDiv.style.display = esAdminParaSi ? 'block' : 'none';
 
-    // CORRECCIÓN: Regla 3 ("Online" fuerza "Ocultar")
+    // CORRECCIÓN: Regla 3 ("Online" fuerza "Ocultar", otra opción lo desactiva)
     if (consultorioSelect.value === '4') {
         ocultarCheckbox.checked = true;
         ocultarCheckbox.disabled = true;
     } else {
-        ocultarCheckbox.disabled = false;
-        // Si no está bloqueado, su estado depende de si el admin quiere ocultar una cita física
-        // No lo desmarcamos automáticamente, para dar flexibilidad.
+        ocultarCheckbox.checked = false; // Se desmarca al elegir otra opción
+        ocultarCheckbox.disabled = false; // Se desbloquea
     }
 }
 
