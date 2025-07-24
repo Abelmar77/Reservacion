@@ -67,7 +67,7 @@ function configurarCalendario() {
         slotMinTime: '08:00:00',
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
-        dateClick: handleDateClick, // Se activa con un toque/clic simple
+       dateClick: handleDateClick, // Se activa con un toque/clic simple
         select: handleTimeSelect,
         eventClick: handleEventClick,
         eventDrop: handleEventDrop,
