@@ -1,0 +1,132 @@
+/* Contenido para tu archivo: reservas-style.css */
+body {
+    padding: 1em;
+    font-family: sans-serif;
+    background-color: #f8f8f8;
+    color: #333;
+}
+nav {
+    background-color: #e9e9e9;
+    padding: 0.8em 1em;
+    border-radius: 6px;
+    margin-bottom: 1.5em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+nav ul li { margin-left: 1em; }
+nav ul li:first-child { margin-left: 0; }
+nav a, nav button { text-decoration: none; color: #555; }
+nav strong { color: #b57390; font-weight: bold; }
+
+#calendario {
+    max-width: 1100px;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+    padding: 1em;
+}
+.fc-header-toolbar { margin-bottom: 1em; }
+.fc-button {
+    background-color: #d4b5c3 !important; color: #333 !important;
+    border: none !important; border-radius: 4px !important;
+    padding: 0.5em 1em !important; cursor: pointer !important; font-size: 0.9em !important;
+}
+.fc-button:hover { background-color: #c8a6b8 !important; }
+.fc-today-button { background-color: #a79ac5 !important; color: white !important; }
+.fc-today-button:hover { background-color: #9384b0 !important; }
+.fc-event {
+    border: none !important; color: white !important; padding: 0.3em 0.6em !important;
+    border-radius: 4px !important; cursor: pointer !important; margin-bottom: 1px !important;
+}
+.fc-event-title { font-size: 0.9em; }
+
+.modal {
+    display: none; position: fixed; z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    overflow: auto; background-color: rgba(0,0,0,0.4);
+}
+.modal-contenido {
+    background-color: #fefefe; margin: 10% auto; padding: 20px;
+    border: 1px solid #888; width: 80%; max-width: 500px;
+    border-radius: 8px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+.modal-cerrar {
+    color: #aaa; float: right; font-size: 28px;
+    font-weight: bold; cursor: pointer;
+}
+.modal-cerrar:hover, .modal-cerrar:focus { color: #000; text-decoration: none; cursor: pointer; }
+.modal-contenido h3 { color: #b57390; margin-top: 0; margin-bottom: 1em; text-align: center; }
+.modal-contenido label { display: block; margin-bottom: 0.5em; font-weight: bold; color: #555; }
+.modal-contenido input, .modal-contenido select {
+    width: 100%; padding: 8px; margin-bottom: 1em;
+    border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;
+}
+.modal-contenido button {
+    background-color: #b57390; color: white; padding: 0.7em 1.2em;
+    border: none; border-radius: 4px; cursor: pointer;
+    font-size: 1em; transition: background-color 0.3s ease;
+}
+.modal-contenido button.secondary { background-color: #a79ac5; }
+.modal-contenido button.contrast { background-color: #c93a49; }
+.modal-contenido button:hover { filter: brightness(110%); }
+.modal-contenido .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1em;
+}
+
+.alerta-contenido {
+    background-color: #ffffff; margin: 15% auto; padding: 25px 30px;
+    border-top: 5px solid #b57390; width: 90%; max-width: 400px;
+    border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.alerta-contenido h3 { margin-top: 0; color: #333; }
+.alerta-contenido p { margin: 15px 0 25px 0; font-size: 1.1em; color: #555; }
+#alerta-cerrar-btn {
+    background-color: #b57390; color: white; border: none; padding: 10px 25px;
+    border-radius: 5px; cursor: pointer; font-weight: bold; transition: filter 0.2s;
+}
+#alerta-cerrar-btn:hover { filter: brightness(110%); }
+#nueva-reserva-btn {
+    background-color: #d4b5c3; color: #3f3f3f; border: none;
+    padding: 12px 24px; font-size: 1em; font-weight: bold;
+    border-radius: 8px; cursor: pointer; transition: transform 0.2s ease-in-out;
+}
+#nueva-reserva-btn:hover { transform: scale(1.05); }
+
+.alerta-contenido div { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
+#cancelar-eliminar-btn, #confirmar-eliminar-btn {
+    border: none; padding: 10px 20px; border-radius: 5px;
+    cursor: pointer; font-weight: bold; min-width: 120px; transition: filter 0.2s;
+}
+#cancelar-eliminar-btn:hover, #confirmar-eliminar-btn:hover { filter: brightness(110%); }
+#cancelar-eliminar-btn { background-color: #6c757d; color: white; }
+#confirmar-eliminar-btn { background-color: #c93a49; color: white; }
+
+#toggle-view-btn {
+    background-color: #a79ac5; color: white; border: none; padding: 8px 16px;
+    border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; transition: filter 0.2s;
+}
+#toggle-view-btn:hover { filter: brightness(110%); }
+#ocultar-reserva-div {
+    background-color: #f0f0f0; padding: 15px; border-radius: 6px;
+    margin-top: 1em; border: 1px solid #e0e0e0;
+}
+#ocultar-reserva-div label { display: flex; align-items: center; gap: 10px; font-weight: normal; margin: 0; }
+input[type="checkbox"]#ocultar-reserva-checkbox {
+    appearance: none; -webkit-appearance: none; position: relative; width: 40px;
+    height: 22px; background: #ccc; border-radius: 20px; cursor: pointer; transition: background-color 0.3s;
+}
+input[type="checkbox"]#ocultar-reserva-checkbox::before {
+    content: ''; position: absolute; width: 18px; height: 18px;
+    border-radius: 50%; background: white; top: 2px; left: 2px; transition: left 0.3s;
+}
+input[type="checkbox"]#ocultar-reserva-checkbox:checked { background: #b57390; }
+input[type="checkbox"]#ocultar-reserva-checkbox:checked::before { left: 20px; }
