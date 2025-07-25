@@ -57,19 +57,30 @@ async function verificarSesion() {
 
 function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
+
     calendario = new FullCalendar.Calendar(calendarioEl, {
-        initialView: 'timeGridWeek',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+        // --- CAMBIO 1: VISTA PREDETERMINADA ---
+        initialView: 'timeGridDay', // Ahora la vista inicial es 'día'
+
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        
+        // --- CAMBIO 2: LÍNEA DE HORA ACTUAL ---
+        nowIndicator: true, // Muestra la línea de la hora actual
+
         height: 'auto',
-        locale: 'es',
-        editable: true,
+        locale: 'es', 
+        editable: true, 
         selectable: true,
-        slotMinTime: '08:00:00',
+        slotMinTime: '08:00:00', 
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
-        dateClick: handleDateClick,
-        select: handleTimeSelect,
-        eventClick: handleEventClick,
+        dateClick: handleDateClick, 
+        select: handleTimeSelect, 
+        eventClick: handleEventClick, 
         eventDrop: handleEventDrop,
     });
     calendario.render();
