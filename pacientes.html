@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Cita</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="reservas-style.css">
+     <style>
+        body {
+            padding-top: 0px; /* Reducir el espacio superior del body */
+        }
+        main.container > div {
+            margin-bottom: 1.5em; /* Reducir el espacio debajo del bloque del logo y títulos */
+        }
+        main.container img {
+            margin-top: 0px; /* Reducir el margen superior del logo */
+            margin-bottom: 0.5em; /* Reducir el margen inferior del logo */
+        }
+        main.container h1 {
+            margin-top: 0.1em; /* Reducir el margen superior del título */
+            margin-bottom: 0.1em; /* Reducir el margen inferior del título */
+            font-size: 1.5em; /* Puedes ajustar el tamaño de la fuente si es necesario */
+        }
+        main.container p {
+            margin-top: 0.1em; /* Reducir el margen superior del párrafo */
+            margin-bottom: 0.1em; /* Reducir el margen inferior del párrafo */
+            font-size: .9em; /* Puedes ajustar el tamaño de la fuente si es necesario */
+        }
+        #calendario {
+            margin-top: 0.1em; /* Reducir el espacio antes del calendario */
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div style="text-align: center; margin-bottom: 2em;">
+            <img src="logo.png" alt="Logo" style="width: 150px; margin-top: 20px;">
+            <h1>Agenda tu Cita</h1>
+            <p>Selecciona un horario disponible en el calendario.</p>
+        </div>
+
+        <div id="calendario"></div>
+    </main>
+
+    <div id="evento-modal" class="modal">
+        <div class="modal-contenido">
+            <span class="modal-cerrar">&times;</span>
+            <h3 id="modal-titulo">Confirmar Cita</h3>
+            <form id="evento-form">
+                <label for="nombre_paciente">Tu Nombre Completo</label>
+                <input type="text" id="nombre_paciente" required>
+
+                <label for="fecha_inicio">Fecha y Hora de Inicio</label>
+                <input type="datetime-local" id="fecha_inicio" required>
+                
+                <div style="margin-top: 1.5em;">
+                    <button type="submit" id="guardar-btn">Agendar Cita</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="alerta-modal" class="modal">
+        <div class="alerta-contenido">
+            <h3>⚠️ Atención</h3>
+            <p id="alerta-mensaje"></p>
+            <button id="alerta-cerrar-btn">Entendido</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/es.js"></script>
+    <script src="pacientes.js"></script>
+</body>
+</html>
