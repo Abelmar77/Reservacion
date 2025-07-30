@@ -318,7 +318,7 @@ function configurarEventListeners() {
         // Aquí simulamos que el admin está creando una cita ficticia
         const datosCita = {
             titulo: 'Día Bloqueado',
-            id_consultorio: '1', // O cualquier consultorio
+            id_consultorio: '4', // O cualquier consultorio
             fecha_inicio: fechaActual.toISOString(),
             fecha_fin: fechaFin.toISOString(),
             id_empleado: currentUser.id, // Se asigna al admin
