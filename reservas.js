@@ -1,18 +1,12 @@
-// --- CONFIGURACIÓN ---
 const SUPABASE_URL = 'https://iwoduwilxjburozehzjq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b2R1d2lseGpidXJvemVoempxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMjY1ODksImV4cCI6MjA2ODgwMjU4OX0.8wdrxV8iUzMVX71y-lu94XAQoLQ6rbQoB1u8LA2b9i0';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- VARIABLES GLOBALES ---
-let calendario;
-let currentUser = null;
-let userRole = null;
-let idParaEliminar = null;
+// --- VARIABLES Y ELEMENTOS DEL DOM ---
+let calendario, currentUser, userRole, idParaEliminar;
 let vistaActual = 'todos';
-let todasLasReservaciones = [];
-let todosLosPerfiles = [];
+let todasLasReservaciones = [], todosLosPerfiles = [];
 
-// --- ELEMENTOS DEL DOM ---
 const modal = document.getElementById('evento-modal');
 const modalTitulo = document.getElementById('modal-titulo');
 const cerrarModalBtn = document.querySelector('.modal-cerrar');
@@ -29,6 +23,7 @@ const confirmarModal = document.getElementById('confirmar-modal');
 const confirmarEliminarBtn = document.getElementById('confirmar-eliminar-btn');
 const cancelarEliminarBtn = document.getElementById('cancelar-eliminar-btn');
 const bloquearDiaBtn = document.getElementById('bloquear-dia-btn');
+
 // --- LÓGICA PRINCIPAL ---
 async function inicializar() {
     await verificarSesion();
@@ -42,7 +37,6 @@ async function verificarSesion() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = 'index.html'; return; }
     currentUser = session.user;
-
     const { data: profile } = await supabaseClient.from('profiles').select('name, role').eq('id', currentUser.id).single();
     if (profile) {
         userRole = profile.role;
@@ -129,39 +123,44 @@ async function handleEventDrop(info) {
 }
 
 
-// --- LÓGICA DE MODALES ---
-async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
+async function abrirModal(fechaInicio = null, evento = null) {
     eventoForm.reset();
     document.getElementById('id_reservacion').value = '';
     eliminarBtn.style.display = 'none';
+    bloquearDiaBtn.style.display = 'none';
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
-    const bloquearDiaDiv = document.getElementById('admin-bloquear-dia-div');
 
     if (userRole === 'administrador') {
         empleadoSelectorDiv.style.display = 'block';
-        bloquearDiaDiv.style.display = 'block'; // Muestra el botón de bloquear
         if (todosLosPerfiles.length > 0) {
             empleadoSelect.innerHTML = '';
             todosLosPerfiles.forEach(p => empleadoSelect.add(new Option(p.name, p.id)));
         }
     } else {
         empleadoSelectorDiv.style.display = 'none';
-        bloquearDiaDiv.style.display = 'none'; // Oculta el botón
     }
 
     if (evento) {
         modalTitulo.textContent = 'Editar Reservación';
-        bloquearDiaDiv.style.display = 'none'; // Oculta el botón al editar
-        // ... (resto de la lógica de edición se mantiene igual)
+        const props = evento.extendedProps;
+        document.getElementById('id_reservacion').value = evento.id;
+        document.getElementById('titulo').value = props.titulo;
+        document.getElementById('fecha_inicio').value = formatarFechaParaInput(evento.start);
+        if (userRole === 'administrador') empleadoSelect.value = props.id_empleado;
+        document.getElementById('ocultar-reserva-checkbox').checked = props.oculto;
+        if (userRole === 'administrador' || currentUser.id === props.id_empleado) {
+            eliminarBtn.style.display = 'block';
+        }
+        actualizarCamposAdmin();
+        consultorioSelect.value = props.id_consultorio;
     } else {
         modalTitulo.textContent = 'Nueva Reservación';
+        if (userRole === 'administrador') bloquearDiaBtn.style.display = 'block';
         const fechaInicioObj = new Date(fechaInicio);
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
-        if (userRole === 'administrador') {
-            empleadoSelect.value = currentUser.id;
-        }
+        if (userRole === 'administrador') empleadoSelect.value = currentUser.id;
     }
     
     actualizarCamposAdmin();
@@ -300,46 +299,57 @@ function configurarEventListeners() {
     };
     
     // Asignamos los listeners a los selectores de admin
-    const consultorioSelect = document.getElementById('id_consultorio');
+  const consultorioSelect = document.getElementById('id_consultorio');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     consultorioSelect.addEventListener('change', actualizarCamposAdmin);
     empleadoSelect.addEventListener('change', actualizarCamposAdmin);
 
-    // --- LÓGICA AÑADIDA PARA EL BOTÓN DE BLOQUEAR DÍA ---
-    const bloquearDiaBtn = document.getElementById('bloquear-dia-btn');
     bloquearDiaBtn.addEventListener('click', () => {
-        const empleadoSelect = document.getElementById('id_empleado_seleccionado');
-        const consultorioSelect = document.getElementById('id_consultorio');
-        const tituloInput = document.getElementById('titulo');
-
-        // 1. Asigna la cita al admin actual
-        empleadoSelect.value = currentUser.id;
-        
-        // 2. Llama a la función para que muestre la opción "Online"
-        actualizarCamposAdmin();
-        // 3. Selecciona "Online"
-        consultorioSelect.value = '4';
-
-        // 4. Vuelve a llamar a la función para que la regla "Online -> Oculto" se aplique
-        actualizarCamposAdmin();
-
-        // 5. Pone un título descriptivo
-        tituloInput.value = 'Día Bloqueado';
-        
-        // 6. Configura la cita para todo el día
         const fechaInicioInput = document.getElementById('fecha_inicio');
-        const fechaFinInput = document.getElementById('fecha_fin');
-        const fechaInicioObj = new Date(fechaInicioInput.value);
+        const tituloInput = document.getElementById('titulo');
+        const fechaActual = new Date(fechaInicioInput.value);
         
-        fechaInicioObj.setHours(8, 0, 0, 0); // Establece la hora de inicio a las 8:00 AM
-        const fechaFinObj = new Date(fechaInicioObj);
-        fechaFinObj.setHours(22, 0, 0, 0); // Establece la hora de fin a las 10:00 PM
+        fechaActual.setHours(8, 0, 0, 0);
+        const fechaFin = new Date(fechaActual);
+        fechaFin.setHours(22, 0, 0, 0);
 
-        fechaInicioInput.value = formatarFechaParaInput(fechaInicioObj);
-        fechaFinInput.value = formatarFechaParaInput(fechaFinObj);
+        // Guardamos los datos en el formulario para el handleFormSubmit
+        // NO guardamos una reservación de 1 hora.
+        // Aquí simulamos que el admin está creando una cita ficticia
+        const datosCita = {
+            titulo: 'Día Bloqueado',
+            id_consultorio: '1', // O cualquier consultorio
+            fecha_inicio: fechaActual.toISOString(),
+            fecha_fin: fechaFin.toISOString(),
+            id_empleado: currentUser.id, // Se asigna al admin
+            oculto: true
+        };
 
-        // 7. Muestra una alerta visual para el usuario
-        mostrarAlerta('Campos configurados para bloquear el día. Haz clic en "Guardar" para confirmar.');
+        // Creamos un evento "ficticio" para añadirlo al calendario
+        // Esto NO se guarda en la base de datos, solo es visual
+        const eventoFicticio = {
+            title: 'Día Bloqueado',
+            start: fechaActual,
+            end: fechaFin,
+            backgroundColor: '#6c757d',
+            borderColor: '#6c757d'
+        };
+        calendario.addEvent(eventoFicticio);
+
+        // Cerramos el modal
+        cerrarModal();
+
+        // Guardamos los datos en la base de datos
+        supabaseClient.from('reservaciones').insert(datosCita).then(({error}) => {
+            if(error){
+                mostrarAlerta('Error al bloquear el día');
+                cargarTodasLasReservaciones().then(filtrarYRenderizarEventos);
+            } else {
+                mostrarAlerta('El día ha sido bloqueado exitosamente.');
+                cargarTodasLasReservaciones().then(filtrarYRenderizarEventos);
+            }
+        });
+ 
     });
 }
 function formatarFechaParaInput(fecha) {
