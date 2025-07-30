@@ -12,9 +12,7 @@
         <nav>
             <ul>
                 <li><strong>Reservaciones</strong></li>
-                <li>
-                    <button id="toggle-view-btn" style="display: none;">Ver solo mis reservaciones</button>
-                </li>
+                <li><button id="toggle-view-btn" style="display: none;">Ver solo mis reservaciones</button></li>
             </ul>
             <ul>
                 <li><a href="#" id="nombre-usuario"></a></li>
@@ -51,10 +49,10 @@
                     <select id="id_empleado_seleccionado"></select>
                 </div>
 
-                   <div>
-                        <label for="fecha_inicio">Fecha y Hora de Inicio</label>
-                        <input type="datetime-local" id="fecha_inicio" required>
-                    </div>
+                <div>
+                    <label for="fecha_inicio">Fecha y Hora de Inicio</label>
+                    <input type="datetime-local" id="fecha_inicio" required>
+                </div>
 
                 <div id="ocultar-reserva-div" style="display: none;">
                     <label for="ocultar-reserva-checkbox">
@@ -63,13 +61,11 @@
                     </label>
                 </div>
                 
-                <div style="margin-top: 1.5em; display: flex; gap: 10px;">
+                <div class="form-actions">
                     <button type="submit" id="guardar-btn">Guardar</button>
                     <button type="button" id="eliminar-btn" class="contrast" style="display: none;">Eliminar</button>
+                    <button type="button" id="bloquear-dia-btn" class="secondary" style="display: none;">Bloquear Día Completo</button>
                 </div>
-                <div id="admin-bloquear-dia-div" style="display: none; margin-top: 1.5em;">
-    <button type="button" id="bloquear-dia-btn" class="secondary">Bloquear Día Completo</button>
-</div>
             </form>
         </div>
     </div>
@@ -81,7 +77,6 @@
             <button id="alerta-cerrar-btn">Entendido</button>
         </div>
     </div>
-
     <div id="confirmar-modal" class="modal">
         <div class="alerta-contenido">
             <h3>Confirmar Eliminación</h3>
