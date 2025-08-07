@@ -56,31 +56,33 @@ function configurarCalendario() {
 
     calendario = new FullCalendar.Calendar(calendarioEl, {
         initialView: 'timeGridDay',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        navLinks: true, // Habilita los enlaces de navegación
-        dateClick: handleDateClick, // Usamos nuestra lógica personalizada
+        
+        // ESTA LÍNEA ES CLAVE para que los números de los días sean enlaces
+        navLinks: true, 
+
         nowIndicator: true,
         height: 'auto',
-        locale: 'es',
-        editable: true,
+        locale: 'es', 
+        editable: true, 
         selectable: true,
-        slotMinTime: '08:00:00',
+        slotMinTime: '08:00:00', 
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
-        select: handleTimeSelect,
-        eventClick: handleEventClick,
+        
+        // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
+        dateClick: handleDateClick, 
+        
+        select: handleTimeSelect, 
+        eventClick: handleEventClick, 
         eventDrop: handleEventDrop,
     });
-
     calendario.render();
 }
-
-
-
 
 function handleDateClick(info) {
     const vista = info.view.type;
@@ -103,7 +105,6 @@ function handleDateClick(info) {
     // Para otras vistas: abre el modal
     abrirModal(info.dateStr);
 }
-
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -135,13 +136,24 @@ function filtrarYRenderizarEventos() {
 // --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
 
 function handleDateClick(info) {
-    // Si la vista actual es la de "mes", no hagas nada.
-    // Esto permite que la función de navLinks (navegación) tenga prioridad.
-    if (info.view.type === 'dayGridMonth') {
+    const vista = info.view.type;
+    const jsEvent = info.jsEvent;
+
+    // Solo actúa si estamos en vista de mes
+    if (vista === 'dayGridMonth') {
+        const clickedElement = jsEvent.target;
+
+        // Si el clic fue en el número del día (navLink), deja que FullCalendar lo maneje
+        if (clickedElement.closest('a.fc-daygrid-day-number')) {
+            return; // deja que el navLink funcione
+        }
+
+        // Si fue en un espacio vacío de la celda: forzamos el cambio de vista
+        calendario.changeView('timeGridDay', info.dateStr);
         return;
     }
-    
-    // Si la vista es de "semana" o "día", abre el modal para crear una cita.
+
+    // Para otras vistas: abre el modal
     abrirModal(info.dateStr);
 }
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
@@ -396,9 +408,6 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
-
-
-
 
 
 
