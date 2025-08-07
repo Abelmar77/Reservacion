@@ -78,8 +78,7 @@ function configurarCalendario() {
         
         // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
         eventClick: handleEventClick, 
-        eventDrop: handleEventDrop,
-    });
+        eventDrop: handleEventDrop});
     calendario.render();
 }
 
@@ -230,8 +229,7 @@ async function handleFormSubmit(e) {
         fecha_inicio: new Date(fechaInicio).toISOString(),
         fecha_fin: fechaFin,
         id_empleado: empleadoId,
-        oculto: esOculto,
-    };
+        oculto: esOculto};
 
     const { error } = id ? await supabaseClient.from('reservaciones').update(datosCita).eq('id', id)
                          : await supabaseClient.from('reservaciones').insert(datosCita);
