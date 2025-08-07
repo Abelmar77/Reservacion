@@ -79,10 +79,7 @@ function configurarCalendario() {
         // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
         dateClick: handleDateClick, 
         
-        select: handleTimeSelect, 
-        eventClick: handleEventClick, 
-        eventDrop: handleEventDrop,
-    });
+        eventDrop: handleEventDrop});
     calendario.render();
 }
 
@@ -106,7 +103,10 @@ function handleDateClick(info) {
         return;
     }
 
-    if (estaCambiandoVista) return;}
+    if (estaCambiandoVista) return;
+
+    abrirModal(info.dateStr);
+}
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -157,19 +157,10 @@ function handleDateClick(info) {
         return;
     }
 
-    if (estaCambiandoVista) return;}
-function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
-function handleEventClick(info) { abrirModal(null, info.event); }
-async function handleEventDrop(info) {
-    if (!confirm("¿Mover esta reservación?")) { info.revert(); return; }
-    const { error } = await supabaseClient.from('reservaciones').update({
-        fecha_inicio: info.event.start.toISOString(),
-        fecha_fin: info.event.end.toISOString()
-    }).eq('id', info.event.id);
-    if (error) { mostrarAlerta("No tienes permiso para mover esta reservación."); info.revert(); }
+    if (estaCambiandoVista) return;
+
+    abrirModal(info.dateStr);
 }
-
-
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     // --- SE HA ELIMINADO LA VALIDACIÓN DE FECHAS PASADAS ---
 
@@ -293,8 +284,7 @@ async function handleFormSubmit(e) {
         fecha_inicio: new Date(fechaInicio).toISOString(),
         fecha_fin: fechaFin,
         id_empleado: empleadoId,
-        oculto: esOculto,
-    };
+        oculto: esOculto};
 
     const { error } = id ? await supabaseClient.from('reservaciones').update(datosCita).eq('id', id)
                          : await supabaseClient.from('reservaciones').insert(datosCita);
@@ -342,7 +332,8 @@ function configurarEventListeners() {
     eventoForm.onsubmit = handleFormSubmit;
     eliminarBtn.onclick = handleEliminar;
     logoutBtn.addEventListener('click', handleLogout);
-    nuevaReservaBtn.onclick = () =>toggleViewBtn.onclick = () => {
+    nuevaReservaBtn.onclick = () => abrirModal(new Date());
+    toggleViewBtn.onclick = () => {
         vistaActual = (vistaActual === 'todos') ? 'propias' : 'todos';
         toggleViewBtn.textContent = (vistaActual === 'todos') ? 'Ver solo mis reservaciones' : 'Ver todas las reservaciones';
         filtrarYRenderizarEventos();
