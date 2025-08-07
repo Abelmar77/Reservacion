@@ -77,41 +77,8 @@ function configurarCalendario() {
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
         
         // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
-        dateClick: handleDateClick, 
-        
-        select: handleTimeSelect, 
         eventClick: handleEventClick});
     calendario.render();
-}
-
-function handleDateClick(info) {
-    const vista = info.view.type;
-    const jsEvent = info.jsEvent;
-
-    if (vista === 'dayGridMonth') {
-        const clickedElement = jsEvent.target;
-
-        if (clickedElement.closest('a.fc-daygrid-day-number')) {
-            return;
-        }
-
-        estaCambiandoVista = true;
-
-        setTimeout(() => {
-            calendario.changeView('timeGridDay', info.dateStr);
-        }, 0);
-
-        return;
-    }
-
-    if (estaCambiandoVista) return;
-
-    abrirModal(info.dateStr);
-}
-async function cargarTodasLasReservaciones() {
-    const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
-    todasLasReservaciones = error ? [] : data;
-    if (error) console.error("Error cargando reservaciones:", error);
 }
 
 function filtrarYRenderizarEventos() {
@@ -137,42 +104,6 @@ function filtrarYRenderizarEventos() {
 }
 
 // --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
-
-function handleDateClick(info) {
-    const vista = info.view.type;
-    const jsEvent = info.jsEvent;
-
-    if (vista === 'dayGridMonth') {
-        const clickedElement = jsEvent.target;
-
-        if (clickedElement.closest('a.fc-daygrid-day-number')) {
-            return;
-        }
-
-        estaCambiandoVista = true;
-
-        setTimeout(() => {
-            calendario.changeView('timeGridDay', info.dateStr);
-        }, 0);
-
-        return;
-    }
-
-    if (estaCambiandoVista) return;
-
-    abrirModal(info.dateStr);
-}
-function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
-function handleEventClick(info) { abrirModal(null, info.event); }
-async function handleEventDrop(info) {
-    if (!confirm("¿Mover esta reservación?")) { info.revert(); return; }
-    const { error } = await supabaseClient.from('reservaciones').update({
-        fecha_inicio: info.event.start.toISOString(),
-        fecha_fin: info.event.end.toISOString()
-    }).eq('id', info.event.id);
-    if (error) { mostrarAlerta("No tienes permiso para mover esta reservación."); info.revert(); }
-}
-
 
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     // --- SE HA ELIMINADO LA VALIDACIÓN DE FECHAS PASADAS ---
