@@ -106,11 +106,7 @@ function handleDateClick(info) {
         return;
     }
 
-    if (estaCambiandoVista) return;
-
-    abrirModal(info.dateStr);
-}
-
+    if (estaCambiandoVista) return;}
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -139,8 +135,29 @@ function filtrarYRenderizarEventos() {
     calendario.addEventSource(eventosParaCalendario);
 }
 
+// --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
 
+function handleDateClick(info) {
+    const vista = info.view.type;
+    const jsEvent = info.jsEvent;
 
+    if (vista === 'dayGridMonth') {
+        const clickedElement = jsEvent.target;
+
+        if (clickedElement.closest('a.fc-daygrid-day-number')) {
+            return;
+        }
+
+        estaCambiandoVista = true;
+
+        setTimeout(() => {
+            calendario.changeView('timeGridDay', info.dateStr);
+        }, 0);
+
+        return;
+    }
+
+    if (estaCambiandoVista) return;}
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
 function handleEventClick(info) { abrirModal(null, info.event); }
 async function handleEventDrop(info) {
@@ -325,8 +342,7 @@ function configurarEventListeners() {
     eventoForm.onsubmit = handleFormSubmit;
     eliminarBtn.onclick = handleEliminar;
     logoutBtn.addEventListener('click', handleLogout);
-    nuevaReservaBtn.onclick = () => abrirModal(new Date());
-    toggleViewBtn.onclick = () => {
+    nuevaReservaBtn.onclick = () =>toggleViewBtn.onclick = () => {
         vistaActual = (vistaActual === 'todos') ? 'propias' : 'todos';
         toggleViewBtn.textContent = (vistaActual === 'todos') ? 'Ver solo mis reservaciones' : 'Ver todas las reservaciones';
         filtrarYRenderizarEventos();
@@ -393,7 +409,6 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
-
 
 
 
