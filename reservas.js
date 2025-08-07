@@ -91,23 +91,22 @@ function handleDateClick(info) {
     if (vista === 'dayGridMonth') {
         const clickedElement = jsEvent.target;
 
-        // Si fue en el número del día (navLink), no hacemos nada
+        // Si fue en el número del día (navLink), dejamos que actúe por defecto
         if (clickedElement.closest('a.fc-daygrid-day-number')) {
             return;
         }
 
-        // Retrasamos el cambio de vista para evitar conflicto con apertura del modal
+        // Retrasamos el cambio de vista para evitar la apertura del modal
         setTimeout(() => {
             calendario.changeView('timeGridDay', info.dateStr);
         }, 0);
 
-        return; // No llamamos a abrirModal
+        return;
     }
 
-    // Solo en otras vistas (semana o día) se permite abrir el modal
+    // En otras vistas sí abrimos el modal
     abrirModal(info.dateStr);
 }
-
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -145,19 +144,20 @@ function handleDateClick(info) {
     if (vista === 'dayGridMonth') {
         const clickedElement = jsEvent.target;
 
-        // Si fue en el número del día (navLink), deja que FullCalendar maneje el cambio de vista
+        // Si fue en el número del día (navLink), dejamos que actúe por defecto
         if (clickedElement.closest('a.fc-daygrid-day-number')) {
             return;
         }
 
-        // Si fue en un espacio vacío, detenemos el evento y cambiamos de vista manualmente
-        jsEvent.stopPropagation();
-        jsEvent.preventDefault();
-        calendario.changeView('timeGridDay', info.dateStr);
+        // Retrasamos el cambio de vista para evitar la apertura del modal
+        setTimeout(() => {
+            calendario.changeView('timeGridDay', info.dateStr);
+        }, 0);
+
         return;
     }
 
-    // Para otras vistas (semanal o diaria), abrimos el modal
+    // En otras vistas sí abrimos el modal
     abrirModal(info.dateStr);
 }
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
@@ -412,6 +412,8 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
+
 
 
 
