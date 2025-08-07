@@ -121,7 +121,19 @@ async function handleEventDrop(info) {
 }
 
 
-async function abrirModal(fechaInicio = null, evento = null) {
+async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
+    // --- VALIDACIÓN PARA FECHAS PASADAS ---
+    const fechaSeleccionada = new Date(fechaInicio);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Establece la hora a medianoche para comparar solo el día
+
+    // Si la fecha seleccionada es anterior a hoy Y no estamos editando un evento
+    if (fechaSeleccionada < hoy && !evento) {
+        mostrarAlerta('No puedes crear reservaciones en fechas pasadas.');
+        return; // Detiene la ejecución y no abre el modal
+    }
+    // --- FIN DE LA VALIDACIÓN ---
+
     eventoForm.reset();
     document.getElementById('id_reservacion').value = '';
     eliminarBtn.style.display = 'none';
@@ -129,7 +141,7 @@ async function abrirModal(fechaInicio = null, evento = null) {
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
-
+    
     if (userRole === 'administrador') {
         empleadoSelectorDiv.style.display = 'block';
         if (todosLosPerfiles.length > 0) {
@@ -151,14 +163,16 @@ async function abrirModal(fechaInicio = null, evento = null) {
         if (userRole === 'administrador' || currentUser.id === props.id_empleado) {
             eliminarBtn.style.display = 'block';
         }
-        actualizarCamposAdmin();
+        actualizarCamposAdmin(); 
         consultorioSelect.value = props.id_consultorio;
     } else {
         modalTitulo.textContent = 'Nueva Reservación';
         if (userRole === 'administrador') bloquearDiaBtn.style.display = 'block';
         const fechaInicioObj = new Date(fechaInicio);
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
-        if (userRole === 'administrador') empleadoSelect.value = currentUser.id;
+        if (userRole === 'administrador') {
+            empleadoSelect.value = currentUser.id;
+        }
     }
     
     actualizarCamposAdmin();
@@ -357,4 +371,5 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
