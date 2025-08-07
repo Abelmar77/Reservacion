@@ -63,9 +63,6 @@ function configurarCalendario() {
         },
         navLinks: true,
         dateClick: handleDateClick,
-        dateNavLinkClick: (info) => {
-            calendario.changeView('timeGridDay', info.dateStr);
-        },
         nowIndicator: true,
         height: 'auto',
         locale: 'es',
@@ -83,14 +80,19 @@ function configurarCalendario() {
 }
 
 
+
 function handleDateClick(info) {
-    // Si la vista actual es la de "mes", no hagas nada.
-    // Esto permite que la función de navLinks (navegación) tenga prioridad.
-    if (info.view.type === 'dayGridMonth') {
+    const esVistaMensual = info.view.type === 'dayGridMonth';
+    const esNavLink = info.jsEvent?.target?.closest('a.fc-daygrid-day-number');
+    if (esVistaMensual && esNavLink) {
+      
         return;
     }
-    
-    // Si la vista es de "semana" o "día", abre el modal para crear una cita.
+    if (esVistaMensual) {
+  
+        calendario.changeView('timeGridDay', info.dateStr);
+        return;
+    }
     abrirModal(info.dateStr);
 }
 async function cargarTodasLasReservaciones() {
@@ -385,6 +387,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
