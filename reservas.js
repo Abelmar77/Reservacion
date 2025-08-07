@@ -79,7 +79,8 @@ function configurarCalendario() {
         // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
         dateClick: handleDateClick, 
         
-        eventDrop: handleEventDrop});
+        select: handleTimeSelect, 
+        eventClick: handleEventClick});
     calendario.render();
 }
 
@@ -161,6 +162,18 @@ function handleDateClick(info) {
 
     abrirModal(info.dateStr);
 }
+function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
+function handleEventClick(info) { abrirModal(null, info.event); }
+async function handleEventDrop(info) {
+    if (!confirm("¿Mover esta reservación?")) { info.revert(); return; }
+    const { error } = await supabaseClient.from('reservaciones').update({
+        fecha_inicio: info.event.start.toISOString(),
+        fecha_fin: info.event.end.toISOString()
+    }).eq('id', info.event.id);
+    if (error) { mostrarAlerta("No tienes permiso para mover esta reservación."); info.revert(); }
+}
+
+
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     // --- SE HA ELIMINADO LA VALIDACIÓN DE FECHAS PASADAS ---
 
