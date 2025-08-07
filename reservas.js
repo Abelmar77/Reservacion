@@ -113,7 +113,12 @@ function filtrarYRenderizarEventos() {
 
 // --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
 
-function handleDateClick(info) { abrirModal(info.dateStr); }
+function handleDateClick(info) {
+    if (info.view.type === 'dayGridMonth') {
+        return;
+    }
+    abrirModal(info.dateStr);
+}
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
 function handleEventClick(info) { abrirModal(null, info.event); }
 async function handleEventDrop(info) {
@@ -366,6 +371,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
