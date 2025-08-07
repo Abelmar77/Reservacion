@@ -49,6 +49,8 @@ async function verificarSesion() {
     }
 }
 
+// Pega estas dos funciones en tu reservas.js, reemplazando las versiones antiguas.
+
 function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
 
@@ -60,8 +62,7 @@ function configurarCalendario() {
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         
-        // --- CAMBIO CLAVE ---
-        // Habilita la navegación al hacer clic en los días/semanas
+        // ESTA LÍNEA ES CLAVE para que los números de los días sean enlaces
         navLinks: true, 
 
         nowIndicator: true,
@@ -73,8 +74,7 @@ function configurarCalendario() {
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
         
-        // La acción de 'dateClick' solo se activará en las vistas de semana y día,
-        // no en la de mes, gracias a 'navLinks: true'.
+        // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
         dateClick: handleDateClick, 
         
         select: handleTimeSelect, 
@@ -82,6 +82,17 @@ function configurarCalendario() {
         eventDrop: handleEventDrop,
     });
     calendario.render();
+}
+
+function handleDateClick(info) {
+    // Si la vista actual es la de "mes", no hagas nada.
+    // Esto permite que la función de navLinks (navegación) tenga prioridad.
+    if (info.view.type === 'dayGridMonth') {
+        return;
+    }
+    
+    // Si la vista es de "semana" o "día", abre el modal para crear una cita.
+    abrirModal(info.dateStr);
 }
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
@@ -114,9 +125,13 @@ function filtrarYRenderizarEventos() {
 // --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
 
 function handleDateClick(info) {
+    // Si la vista actual es la de "mes", no hagas nada.
+    // Esto permite que la función de navLinks (navegación) tenga prioridad.
     if (info.view.type === 'dayGridMonth') {
         return;
     }
+    
+    // Si la vista es de "semana" o "día", abre el modal para crear una cita.
     abrirModal(info.dateStr);
 }
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
@@ -371,6 +386,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
