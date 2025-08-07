@@ -90,19 +90,22 @@ function handleDateClick(info) {
 
     if (vista === 'dayGridMonth') {
         const clickedElement = jsEvent.target;
-        // Si fue en el número del día, dejamos que el navLink actúe normalmente
+
+        // Si fue en el número del día (navLink), deja que FullCalendar maneje el cambio de vista
         if (clickedElement.closest('a.fc-daygrid-day-number')) {
             return;
         }
-        // Si fue en un espacio vacío: cambiamos de vista y detenemos la propagación
-        jsEvent.stopPropagation(); // 👈 esta línea evita que continúe el flujo
-        jsEvent.preventDefault();  // 👈 adicionalmente evita cualquier acción por defecto
+
+        // Si fue en un espacio vacío, detenemos el evento y cambiamos de vista manualmente
+        jsEvent.stopPropagation();
+        jsEvent.preventDefault();
         calendario.changeView('timeGridDay', info.dateStr);
         return;
     }
-    abrirModal(info.dateStr); // solo si no es vista mensual
-}
 
+    // Para otras vistas (semanal o diaria), abrimos el modal
+    abrirModal(info.dateStr);
+}
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -137,21 +140,22 @@ function handleDateClick(info) {
     const vista = info.view.type;
     const jsEvent = info.jsEvent;
 
-    // Solo actúa si estamos en vista de mes
     if (vista === 'dayGridMonth') {
         const clickedElement = jsEvent.target;
 
-        // Si el clic fue en el número del día (navLink), deja que FullCalendar lo maneje
+        // Si fue en el número del día (navLink), deja que FullCalendar maneje el cambio de vista
         if (clickedElement.closest('a.fc-daygrid-day-number')) {
-            return; // deja que el navLink funcione
+            return;
         }
 
-        // Si fue en un espacio vacío de la celda: forzamos el cambio de vista
+        // Si fue en un espacio vacío, detenemos el evento y cambiamos de vista manualmente
+        jsEvent.stopPropagation();
+        jsEvent.preventDefault();
         calendario.changeView('timeGridDay', info.dateStr);
         return;
     }
 
-    // Para otras vistas: abre el modal
+    // Para otras vistas (semanal o diaria), abrimos el modal
     abrirModal(info.dateStr);
 }
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
@@ -406,10 +410,6 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
-
-
-
-
 
 
 
