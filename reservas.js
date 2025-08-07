@@ -60,8 +60,9 @@ function configurarCalendario() {
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         
-        // --- LÍNEA AÑADIDA ---
-        navLinks: true, // Permite hacer clic en los días para navegar
+        // --- CAMBIO CLAVE ---
+        // Habilita la navegación al hacer clic en los días/semanas
+        navLinks: true, 
 
         nowIndicator: true,
         height: 'auto',
@@ -71,7 +72,11 @@ function configurarCalendario() {
         slotMinTime: '08:00:00', 
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
+        
+        // La acción de 'dateClick' solo se activará en las vistas de semana y día,
+        // no en la de mes, gracias a 'navLinks: true'.
         dateClick: handleDateClick, 
+        
         select: handleTimeSelect, 
         eventClick: handleEventClick, 
         eventDrop: handleEventDrop,
@@ -361,6 +366,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
