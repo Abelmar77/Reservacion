@@ -1,4 +1,4 @@
-let estaCambiandoVista = false;
+// --- CONFIGURACIÓN ---
 const SUPABASE_URL = 'https://iwoduwilxjburozehzjq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b2R1d2lseGpidXJvemVoempxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMjY1ODksImV4cCI6MjA2ODgwMjU4OX0.8wdrxV8iUzMVX71y-lu94XAQoLQ6rbQoB1u8LA2b9i0';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -50,23 +50,16 @@ async function verificarSesion() {
     }
 }
 
-// Pega estas dos funciones en tu reservas.js, reemplazando las versiones antiguas.
-
 function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
-
     calendario = new FullCalendar.Calendar(calendarioEl, {
-        viewDidMount: () => { estaCambiandoVista = false; },
         initialView: 'timeGridDay',
         headerToolbar: { 
             left: 'prev,next today', 
             center: 'title', 
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        
-        // ESTA LÍNEA ES CLAVE para que los números de los días sean enlaces
-        navLinks: true, 
-
+        navLinks: true,
         nowIndicator: true,
         height: 'auto',
         locale: 'es', 
@@ -76,9 +69,18 @@ function configurarCalendario() {
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
         
-        // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
-        eventClick: handleEventClick});
+        dateClick: handleDateClick, 
+        select: handleTimeSelect, // <-- ESTA LÍNEA FALTABA
+        eventClick: handleEventClick, 
+        eventDrop: handleEventDrop,
+    });
     calendario.render();
+}
+
+async function cargarTodasLasReservaciones() {
+    const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
+    todasLasReservaciones = error ? [] : data;
+    if (error) console.error("Error cargando reservaciones:", error);
 }
 
 function filtrarYRenderizarEventos() {
@@ -104,10 +106,41 @@ function filtrarYRenderizarEventos() {
 }
 
 // --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
+function handleDateClick(info) {
+    if (info.view.type === 'dayGridMonth') {
+        calendario.changeView('timeGridDay', info.dateStr);
+        return;
+    }
+    abrirModal(info.dateStr);
+}
 
-async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
-    // --- SE HA ELIMINADO LA VALIDACIÓN DE FECHAS PASADAS ---
+function handleTimeSelect(info) {
+    abrirModal(info.startStr);
+}
 
+function handleEventClick(info) {
+    abrirModal(null, info.event);
+}
+
+async function handleEventDrop(info) {
+    const confirmacion = await mostrarConfirmacion("¿Estás seguro de que quieres mover esta reservación?");
+    if (!confirmacion) {
+        info.revert();
+        return;
+    }
+    const { error } = await supabaseClient.from('reservaciones').update({
+        fecha_inicio: info.event.start.toISOString(),
+        fecha_fin: new Date(info.event.start.getTime() + 3600000).toISOString()
+    }).eq('id', info.event.id);
+    if (error) { mostrarAlerta("No tienes permiso para mover esta reservación."); info.revert(); }
+    else {
+        await cargarTodasLasReservaciones();
+        filtrarYRenderizarEventos();
+    }
+}
+
+// --- LÓGICA DE MODALES ---
+async function abrirModal(fechaInicio = null, evento = null) {
     eventoForm.reset();
     document.getElementById('id_reservacion').value = '';
     eliminarBtn.style.display = 'none';
@@ -115,7 +148,7 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
-    
+
     if (userRole === 'administrador') {
         empleadoSelectorDiv.style.display = 'block';
         if (todosLosPerfiles.length > 0) {
@@ -146,6 +179,8 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
         if (userRole === 'administrador') {
             empleadoSelect.value = currentUser.id;
+            actualizarCamposAdmin();
+            consultorioSelect.value = '4';
         }
     }
     
@@ -157,7 +192,6 @@ function cerrarModal() { modal.style.display = 'none'; }
 function mostrarAlerta(mensaje) { alertaMensaje.textContent = mensaje; alertaModal.style.display = 'block'; }
 function cerrarAlerta() { alertaModal.style.display = 'none'; }
 
-// FUNCIÓN ACTUALIZADA Y RENOMBRADA PARA MANEJAR TODAS LAS REGLAS DE ADMIN
 function actualizarCamposAdmin() {
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
@@ -282,9 +316,7 @@ function configurarEventListeners() {
         toggleViewBtn.textContent = (vistaActual === 'todos') ? 'Ver solo mis reservaciones' : 'Ver todas las reservaciones';
         filtrarYRenderizarEventos();
     };
-    
-    // Asignamos los listeners a los selectores de admin
-  const consultorioSelect = document.getElementById('id_consultorio');
+    const consultorioSelect = document.getElementById('id_consultorio');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     consultorioSelect.addEventListener('change', actualizarCamposAdmin);
     empleadoSelect.addEventListener('change', actualizarCamposAdmin);
@@ -337,6 +369,8 @@ function configurarEventListeners() {
  
     });
 }
+
+
 function formatarFechaParaInput(fecha) {
     if (!fecha) return '';
     const d = new Date(fecha);
@@ -344,9 +378,3 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
-
-
-
-
-
-
