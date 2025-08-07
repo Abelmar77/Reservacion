@@ -110,6 +110,7 @@ function handleDateClick(info) {
 
     abrirModal(info.dateStr);
 }
+
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -138,32 +139,8 @@ function filtrarYRenderizarEventos() {
     calendario.addEventSource(eventosParaCalendario);
 }
 
-// --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
 
-function handleDateClick(info) {
-    const vista = info.view.type;
-    const jsEvent = info.jsEvent;
 
-    if (vista === 'dayGridMonth') {
-        const clickedElement = jsEvent.target;
-
-        if (clickedElement.closest('a.fc-daygrid-day-number')) {
-            return;
-        }
-
-        estaCambiandoVista = true;
-
-        setTimeout(() => {
-            calendario.changeView('timeGridDay', info.dateStr);
-        }, 0);
-
-        return;
-    }
-
-    if (estaCambiandoVista) return;
-
-    abrirModal(info.dateStr);
-}
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
 function handleEventClick(info) { abrirModal(null, info.event); }
 async function handleEventDrop(info) {
@@ -416,6 +393,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
