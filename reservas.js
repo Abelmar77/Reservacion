@@ -122,17 +122,7 @@ async function handleEventDrop(info) {
 
 
 async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
-    // --- VALIDACIÓN PARA FECHAS PASADAS ---
-    const fechaSeleccionada = new Date(fechaInicio);
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0); // Establece la hora a medianoche para comparar solo el día
-
-    // Si la fecha seleccionada es anterior a hoy Y no estamos editando un evento
-    if (fechaSeleccionada < hoy && !evento) {
-        mostrarAlerta('No puedes crear reservaciones en fechas pasadas.');
-        return; // Detiene la ejecución y no abre el modal
-    }
-    // --- FIN DE LA VALIDACIÓN ---
+    // --- SE HA ELIMINADO LA VALIDACIÓN DE FECHAS PASADAS ---
 
     eventoForm.reset();
     document.getElementById('id_reservacion').value = '';
@@ -371,5 +361,6 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
