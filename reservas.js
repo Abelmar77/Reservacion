@@ -56,33 +56,32 @@ function configurarCalendario() {
 
     calendario = new FullCalendar.Calendar(calendarioEl, {
         initialView: 'timeGridDay',
-        headerToolbar: { 
-            left: 'prev,next today', 
-            center: 'title', 
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        
-        // ESTA LÍNEA ES CLAVE para que los números de los días sean enlaces
-        navLinks: true, 
-
+        navLinks: true,
+        dateClick: handleDateClick,
+        dateNavLinkClick: (info) => {
+            calendario.changeView('timeGridDay', info.dateStr);
+        },
         nowIndicator: true,
         height: 'auto',
-        locale: 'es', 
-        editable: true, 
+        locale: 'es',
+        editable: true,
         selectable: true,
-        slotMinTime: '08:00:00', 
+        slotMinTime: '08:00:00',
         slotMaxTime: '22:00:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
-        
-        // ESTA FUNCIÓN ahora ignora los clics en la vista de mes
-        dateClick: handleDateClick, 
-        
-        select: handleTimeSelect, 
-        eventClick: handleEventClick, 
+        select: handleTimeSelect,
+        eventClick: handleEventClick,
         eventDrop: handleEventDrop,
     });
+
     calendario.render();
 }
+
 
 function handleDateClick(info) {
     // Si la vista actual es la de "mes", no hagas nada.
@@ -386,6 +385,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
