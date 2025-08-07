@@ -1,3 +1,4 @@
+let estaCambiandoVista = false;
 const SUPABASE_URL = 'https://iwoduwilxjburozehzjq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3b2R1d2lseGpidXJvemVoempxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMjY1ODksImV4cCI6MjA2ODgwMjU4OX0.8wdrxV8iUzMVX71y-lu94XAQoLQ6rbQoB1u8LA2b9i0';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -55,6 +56,7 @@ function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
 
     calendario = new FullCalendar.Calendar(calendarioEl, {
+        viewDidMount: () => { estaCambiandoVista = false; },
         initialView: 'timeGridDay',
         headerToolbar: { 
             left: 'prev,next today', 
@@ -91,12 +93,12 @@ function handleDateClick(info) {
     if (vista === 'dayGridMonth') {
         const clickedElement = jsEvent.target;
 
-        // Si fue en el número del día (navLink), dejamos que actúe por defecto
         if (clickedElement.closest('a.fc-daygrid-day-number')) {
             return;
         }
 
-        // Retrasamos el cambio de vista para evitar la apertura del modal
+        estaCambiandoVista = true;
+
         setTimeout(() => {
             calendario.changeView('timeGridDay', info.dateStr);
         }, 0);
@@ -104,7 +106,8 @@ function handleDateClick(info) {
         return;
     }
 
-    // En otras vistas sí abrimos el modal
+    if (estaCambiandoVista) return;
+
     abrirModal(info.dateStr);
 }
 async function cargarTodasLasReservaciones() {
@@ -144,12 +147,12 @@ function handleDateClick(info) {
     if (vista === 'dayGridMonth') {
         const clickedElement = jsEvent.target;
 
-        // Si fue en el número del día (navLink), dejamos que actúe por defecto
         if (clickedElement.closest('a.fc-daygrid-day-number')) {
             return;
         }
 
-        // Retrasamos el cambio de vista para evitar la apertura del modal
+        estaCambiandoVista = true;
+
         setTimeout(() => {
             calendario.changeView('timeGridDay', info.dateStr);
         }, 0);
@@ -157,7 +160,8 @@ function handleDateClick(info) {
         return;
     }
 
-    // En otras vistas sí abrimos el modal
+    if (estaCambiandoVista) return;
+
     abrirModal(info.dateStr);
 }
 function handleTimeSelect(info) { abrirModal(info.startStr, null, info.endStr); }
