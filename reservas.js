@@ -61,8 +61,8 @@ function configurarCalendario() {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        navLinks: true,
-        dateClick: handleDateClick,
+        navLinks: true, // Habilita los enlaces de navegación
+        dateClick: handleDateClick, // Usamos nuestra lógica personalizada
         nowIndicator: true,
         height: 'auto',
         locale: 'es',
@@ -81,20 +81,29 @@ function configurarCalendario() {
 
 
 
+
 function handleDateClick(info) {
-    const esVistaMensual = info.view.type === 'dayGridMonth';
-    const esNavLink = info.jsEvent?.target?.closest('a.fc-daygrid-day-number');
-    if (esVistaMensual && esNavLink) {
-      
-        return;
-    }
-    if (esVistaMensual) {
-  
+    const vista = info.view.type;
+    const jsEvent = info.jsEvent;
+
+    // Solo actúa si estamos en vista de mes
+    if (vista === 'dayGridMonth') {
+        const clickedElement = jsEvent.target;
+
+        // Si el clic fue en el número del día (navLink), deja que FullCalendar lo maneje
+        if (clickedElement.closest('a.fc-daygrid-day-number')) {
+            return; // deja que el navLink funcione
+        }
+
+        // Si fue en un espacio vacío de la celda: forzamos el cambio de vista
         calendario.changeView('timeGridDay', info.dateStr);
         return;
     }
+
+    // Para otras vistas: abre el modal
     abrirModal(info.dateStr);
 }
+
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -387,6 +396,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
