@@ -53,18 +53,17 @@ function configurarCalendario() {
     const calendarioEl = document.getElementById('calendario');
 
     calendario = new FullCalendar.Calendar(calendarioEl, {
-        // --- CAMBIO 1: VISTA PREDETERMINADA ---
-        initialView: 'timeGridDay', // Ahora la vista inicial es 'día'
-
+        initialView: 'timeGridDay',
         headerToolbar: { 
             left: 'prev,next today', 
             center: 'title', 
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         
-        // --- CAMBIO 2: LÍNEA DE HORA ACTUAL ---
-        nowIndicator: true, // Muestra la línea de la hora actual
+        // --- LÍNEA AÑADIDA ---
+        navLinks: true, // Permite hacer clic en los días para navegar
 
+        nowIndicator: true,
         height: 'auto',
         locale: 'es', 
         editable: true, 
@@ -79,7 +78,6 @@ function configurarCalendario() {
     });
     calendario.render();
 }
-
 async function cargarTodasLasReservaciones() {
     const { data, error } = await supabaseClient.from('reservaciones').select(`id, titulo, fecha_inicio, fecha_fin, id_consultorio, id_empleado, oculto, consultorios(nombre), profiles(name, color_evento)`);
     todasLasReservaciones = error ? [] : data;
@@ -359,3 +357,4 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
