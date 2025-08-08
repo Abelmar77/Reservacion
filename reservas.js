@@ -165,7 +165,7 @@ function mostrarConfirmacion(mensaje) {
 }
 
 // --- LÓGICA DE MODALES ---
-async function abrirModal(fechaInicio = null, evento = null) {
+async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
     eventoForm.reset();
     document.getElementById('id_reservacion').value = '';
     eliminarBtn.style.display = 'none';
@@ -173,7 +173,7 @@ async function abrirModal(fechaInicio = null, evento = null) {
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
-
+    
     if (userRole === 'administrador') {
         empleadoSelectorDiv.style.display = 'block';
         if (todosLosPerfiles.length > 0) {
@@ -184,7 +184,7 @@ async function abrirModal(fechaInicio = null, evento = null) {
         empleadoSelectorDiv.style.display = 'none';
     }
 
-    if (evento) {
+    if (evento) { // Editando
         modalTitulo.textContent = 'Editar Reservación';
         const props = evento.extendedProps;
         document.getElementById('id_reservacion').value = evento.id;
@@ -197,7 +197,8 @@ async function abrirModal(fechaInicio = null, evento = null) {
         }
         actualizarCamposAdmin(); 
         consultorioSelect.value = props.id_consultorio;
-    } else {
+
+    } else { // Creando
         modalTitulo.textContent = 'Nueva Reservación';
         if (userRole === 'administrador') bloquearDiaBtn.style.display = 'block';
         const fechaInicioObj = new Date(fechaInicio);
@@ -394,5 +395,6 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
