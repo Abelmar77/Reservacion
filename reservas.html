@@ -24,24 +24,64 @@
 
         <div style="text-align: center; margin-top: 20px;">
             <button id="nueva-reserva-btn">Nueva Reservación</button>
-            <button id="time-free-btn" style="display: none;">Free time</button>
+            <button id="free-time-btn" style="display: none;">Free time</button>
         </div>
     </main>
 
     <div id="evento-modal" class="modal">
-        </div>
-
-    <div id="time-free-modal" class="modal">
         <div class="modal-contenido">
-            <span class="modal-cerrar" id="cerrar-time-free-modal">&times;</span>
-           <h3>Bloquear Horario (Free time)</h3>
-            <form id="time-free-form">
-                <div class="grid">
-                    <label for="time-free-inicio">Hora de Inicio
-                        <input type="datetime-local" id="time-free-inicio" required>
+            <span class="modal-cerrar">&times;</span>
+            <h3 id="modal-titulo">Nueva Reservación</h3>
+            <form id="evento-form">
+                <input type="hidden" id="id_reservacion">
+                
+                <label for="titulo">Título de la Cita</label>
+                <input type="text" id="titulo" required>
+                
+                <label for="id_consultorio">Consultorio</label>
+                <select id="id_consultorio" required>
+                    <option value="1">Terapia Individual</option>
+                    <option value="2">Terapia Infantil</option>
+                    <option value="3">Terapia Familiar</option>
+                </select>
+
+                <div id="admin-seleccion-empleado" style="display: none;">
+                    <label for="id_empleado_seleccionado">Asignar a Empleado</label>
+                    <select id="id_empleado_seleccionado"></select>
+                </div>
+
+                <div>
+                    <label for="fecha_inicio">Fecha y Hora de Inicio</label>
+                    <input type="datetime-local" id="fecha_inicio" required>
+                </div>
+
+                <div id="ocultar-reserva-div" style="display: none;">
+                    <label for="ocultar-reserva-checkbox">
+                        <input type="checkbox" id="ocultar-reserva-checkbox" name="ocultar-reserva">
+                        Ocultar esta reservación (solo visible para ti)
                     </label>
-                    <label for="time-free-fin">Hora de Fin
-                        <input type="datetime-local" id="time-free-fin" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" id="guardar-btn">Guardar</button>
+                    <button type="button" id="eliminar-btn" class="contrast" style="display: none;">Eliminar</button>
+                    <button type="button" id="bloquear-dia-btn" class="secondary" style="display: none;">Bloquear Día Completo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="free-time-modal" class="modal">
+        <div class="modal-contenido">
+            <span class="modal-cerrar" id="cerrar-free-time-modal">&times;</span>
+            <h3>Bloquear Horario (Free time)</h3>
+            <form id="free-time-form">
+                <div class="grid">
+                    <label for="free-time-inicio">Hora de Inicio
+                        <input type="datetime-local" id="free-time-inicio" required>
+                    </label>
+                    <label for="free-time-fin">Hora de Fin
+                        <input type="datetime-local" id="free-time-fin" required>
                     </label>
                 </div>
                 <div class="form-actions">
@@ -51,8 +91,24 @@
         </div>
     </div>
 
-    <div id="alerta-modal" class="modal"> </div>
-    <div id="confirmar-modal" class="modal"> </div>
+    <div id="alerta-modal" class="modal">
+        <div class="alerta-contenido">
+            <h3>⚠️ Atención</h3>
+            <p id="alerta-mensaje"></p>
+            <button id="alerta-cerrar-btn">Entendido</button>
+        </div>
+    </div>
+
+    <div id="confirmar-modal" class="modal">
+        <div class="alerta-contenido">
+            <h3>Confirmar Eliminación</h3>
+            <p>¿Estás seguro de que quieres eliminar esta reservación? Esta acción es irreversible.</p>
+            <div>
+                <button id="cancelar-eliminar-btn" class="secondary">Cancelar</button>
+                <button id="confirmar-eliminar-btn" class="contrast">Sí, Eliminar</button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
