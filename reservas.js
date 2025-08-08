@@ -24,6 +24,10 @@ const confirmarModal = document.getElementById('confirmar-modal');
 const confirmarEliminarBtn = document.getElementById('confirmar-eliminar-btn');
 const cancelarEliminarBtn = document.getElementById('cancelar-eliminar-btn');
 const bloquearDiaBtn = document.getElementById('bloquear-dia-btn');
+const freeTimeBtn = document.getElementById('free-time-btn');
+const freeTimeModal = document.getElementById('free-time-modal');
+const cerrarFreeTimeModalBtn = document.getElementById('cerrar-free-time-modal');
+const freeTimeForm = document.getElementById('free-time-form');
 
 // --- LÓGICA PRINCIPAL ---
 async function inicializar() {
@@ -33,8 +37,8 @@ async function inicializar() {
     filtrarYRenderizarEventos();
     configurarEventListeners();
 }
-
 async function verificarSesion() {
+    
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) { window.location.href = 'index.html'; return; }
     currentUser = session.user;
@@ -43,7 +47,9 @@ async function verificarSesion() {
         userRole = profile.role;
         nombreUsuarioEl.textContent = `${profile.name} (${profile.role})`;
         if (userRole === 'administrador') {
+            
             toggleViewBtn.style.display = 'block';
+            freeTimeBtn.style.display = 'inline-block'; // Muestra el botón
             const { data: perfiles } = await supabaseClient.from('profiles').select('id, name, role');
             if (perfiles) todosLosPerfiles = perfiles;
         }
@@ -287,27 +293,70 @@ async function handleLogout(event) {
 }
 
 function configurarEventListeners() {
+    // Listeners para cerrar los modales
     cerrarModalBtn.onclick = cerrarModal;
     alertaCerrarBtn.onclick = cerrarAlerta;
     cancelarEliminarBtn.onclick = () => { confirmarModal.style.display = 'none'; idParaEliminar = null; };
+  cerrarFreeTimeModalBtn.onclick = () => {
+        freeTimeModal.style.display = 'none';
+    };
+    // Listener para confirmar una eliminación
     confirmarEliminarBtn.onclick = async () => {
         if (!idParaEliminar) return;
         const { error } = await supabaseClient.from('reservaciones').delete().eq('id', idParaEliminar);
         confirmarModal.style.display = 'none';
-        if (error) { mostrarAlerta("Error al eliminar: " + error.message); }
-        else {
-            cerrarModal();
+        if (error) {
+            mostrarAlerta("Error al eliminar: " + error.message);
+        } else {
+            cerrarModal(); // Cierra también el modal de edición
             await cargarTodasLasReservaciones();
             filtrarYRenderizarEventos();
         }
         idParaEliminar = null;
     };
-    window.onclick = (event) => {
+
+    // Listener para cerrar modales haciendo clic fuera de ellos
+  window.onclick = (event) => {
         if (event.target == modal) cerrarModal();
         if (event.target == alertaModal) cerrarAlerta();
         if (event.target == confirmarModal) confirmarModal.style.display = 'none';
+        if (event.target == freeTimeModal) freeTimeModal.style.display = 'none';
     };
+
+    // Listeners de formularios
     eventoForm.onsubmit = handleFormSubmit;
+   freeTimeForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const fechaInicio = document.getElementById('free-time-inicio').value;
+        const fechaFin = document.getElementById('free-time-fin').value;
+
+        if (!fechaInicio || !fechaFin) {
+            mostrarAlerta('Debes seleccionar una hora de inicio y de fin.');
+            return;
+        }
+
+        const datosBloqueo = {
+            titulo: 'Free time',
+            id_consultorio: 4, // ID de "Online"
+            fecha_inicio: new Date(fechaInicio).toISOString(),
+            fecha_fin: new Date(fechaFin).toISOString(),
+            id_empleado: currentUser.id,
+            oculto: true,
+        };
+
+        const { error } = await supabaseClient.from('reservaciones').insert(datosBloqueo);
+
+        if (error) {
+            mostrarAlerta("Error al bloquear el horario: " + error.message);
+        } else {
+            freeTimeModal.style.display = 'none';
+            mostrarAlerta('El horario ha sido bloqueado exitosamente.');
+            await cargarTodasLasReservaciones();
+            filtrarYRenderizarEventos();
+        }
+    };
+
+    // Listeners de botones principales
     eliminarBtn.onclick = handleEliminar;
     logoutBtn.addEventListener('click', handleLogout);
     nuevaReservaBtn.onclick = () => abrirModal(new Date());
@@ -316,58 +365,16 @@ function configurarEventListeners() {
         toggleViewBtn.textContent = (vistaActual === 'todos') ? 'Ver solo mis reservaciones' : 'Ver todas las reservaciones';
         filtrarYRenderizarEventos();
     };
+    freeTimeBtn.onclick = () => {
+        freeTimeForm.reset();
+        freeTimeModal.style.display = 'block';
+    };
+
+    // Listeners de selectores para administradores
     const consultorioSelect = document.getElementById('id_consultorio');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     consultorioSelect.addEventListener('change', actualizarCamposAdmin);
     empleadoSelect.addEventListener('change', actualizarCamposAdmin);
-
-    bloquearDiaBtn.addEventListener('click', () => {
-        const fechaInicioInput = document.getElementById('fecha_inicio');
-        const tituloInput = document.getElementById('titulo');
-        const fechaActual = new Date(fechaInicioInput.value);
-        
-        fechaActual.setHours(8, 0, 0, 0);
-        const fechaFin = new Date(fechaActual);
-        fechaFin.setHours(22, 0, 0, 0);
-
-        // Guardamos los datos en el formulario para el handleFormSubmit
-        // NO guardamos una reservación de 1 hora.
-        // Aquí simulamos que el admin está creando una cita ficticia
-        const datosCita = {
-            titulo: 'Día Bloqueado',
-            id_consultorio: '4', // O cualquier consultorio
-            fecha_inicio: fechaActual.toISOString(),
-            fecha_fin: fechaFin.toISOString(),
-            id_empleado: currentUser.id, // Se asigna al admin
-            oculto: true
-        };
-
-        // Creamos un evento "ficticio" para añadirlo al calendario
-        // Esto NO se guarda en la base de datos, solo es visual
-        const eventoFicticio = {
-            title: 'Día Bloqueado',
-            start: fechaActual,
-            end: fechaFin,
-            backgroundColor: '#6c757d',
-            borderColor: '#6c757d'
-        };
-        calendario.addEvent(eventoFicticio);
-
-        // Cerramos el modal
-        cerrarModal();
-
-        // Guardamos los datos en la base de datos
-        supabaseClient.from('reservaciones').insert(datosCita).then(({error}) => {
-            if(error){
-                mostrarAlerta('Error al bloquear el día');
-                cargarTodasLasReservaciones().then(filtrarYRenderizarEventos);
-            } else {
-                mostrarAlerta('El día ha sido bloqueado exitosamente.');
-                cargarTodasLasReservaciones().then(filtrarYRenderizarEventos);
-            }
-        });
- 
-    });
 }
 
 
@@ -378,3 +385,4 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
