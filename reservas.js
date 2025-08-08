@@ -23,7 +23,6 @@ const alertaCerrarBtn = document.getElementById('alerta-cerrar-btn');
 const confirmarModal = document.getElementById('confirmar-modal');
 const confirmarEliminarBtn = document.getElementById('confirmar-eliminar-btn');
 const cancelarEliminarBtn = document.getElementById('cancelar-eliminar-btn');
-const bloquearDiaBtn = document.getElementById('bloquear-dia-btn');
 const freeTimeBtn = document.getElementById('free-time-btn');
 const freeTimeModal = document.getElementById('free-time-modal');
 const cerrarFreeTimeModalBtn = document.getElementById('cerrar-free-time-modal');
@@ -165,15 +164,14 @@ function mostrarConfirmacion(mensaje) {
 }
 
 // --- LÓGICA DE MODALES ---
-async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
+async function abrirModal(fechaInicio = null, evento = null) {
     eventoForm.reset();
     document.getElementById('id_reservacion').value = '';
     eliminarBtn.style.display = 'none';
-    bloquearDiaBtn.style.display = 'none';
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
-    
+
     if (userRole === 'administrador') {
         empleadoSelectorDiv.style.display = 'block';
         if (todosLosPerfiles.length > 0) {
@@ -184,7 +182,7 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         empleadoSelectorDiv.style.display = 'none';
     }
 
-    if (evento) { // Editando
+    if (evento) {
         modalTitulo.textContent = 'Editar Reservación';
         const props = evento.extendedProps;
         document.getElementById('id_reservacion').value = evento.id;
@@ -198,9 +196,8 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
         actualizarCamposAdmin(); 
         consultorioSelect.value = props.id_consultorio;
 
-    } else { // Creando
+    } else {
         modalTitulo.textContent = 'Nueva Reservación';
-        if (userRole === 'administrador') bloquearDiaBtn.style.display = 'block';
         const fechaInicioObj = new Date(fechaInicio);
         document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
         if (userRole === 'administrador') {
@@ -209,7 +206,7 @@ async function abrirModal(fechaInicio = null, evento = null, fechaFin = null) {
             consultorioSelect.value = '4';
         }
     }
-    
+
     actualizarCamposAdmin();
     modal.style.display = 'block';
 }
@@ -395,6 +392,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
