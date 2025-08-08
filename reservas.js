@@ -168,7 +168,7 @@ async function abrirModal(fechaInicio = null, evento = null) {
     eventoForm.reset();
     document.getElementById('id_reservacion').value = '';
     eliminarBtn.style.display = 'none';
-    freeTimeBtn.style.display = 'none'; // Oculta el botón por defecto
+    freeTimeBtn.style.display = 'none';
     const empleadoSelectorDiv = document.getElementById('admin-seleccion-empleado');
     const empleadoSelect = document.getElementById('id_empleado_seleccionado');
     const consultorioSelect = document.getElementById('id_consultorio');
@@ -183,16 +183,34 @@ async function abrirModal(fechaInicio = null, evento = null) {
         empleadoSelectorDiv.style.display = 'none';
     }
 
-    if (evento) { // Editando
+    if (evento) { // --- ESTE BLOQUE ES EL QUE SE HABÍA PERDIDO ---
         modalTitulo.textContent = 'Editar Reservación';
-        // ... (resto de la lógica de edición se mantiene igual)
-    } else { // Creando
+        const props = evento.extendedProps;
+        document.getElementById('id_reservacion').value = evento.id;
+        document.getElementById('titulo').value = props.titulo;
+        document.getElementById('fecha_inicio').value = formatarFechaParaInput(evento.start);
+        if (userRole === 'administrador') {
+            empleadoSelect.value = props.id_empleado;
+        }
+        document.getElementById('ocultar-reserva-checkbox').checked = props.oculto;
+        if (userRole === 'administrador' || currentUser.id === props.id_empleado) {
+            eliminarBtn.style.display = 'block'; // Muestra el botón Eliminar
+        }
+        actualizarCamposAdmin(); 
+        consultorioSelect.value = props.id_consultorio;
+
+    } else { // Creando una nueva cita
         modalTitulo.textContent = 'Nueva Reservación';
-        // Muestra el botón "Free time" solo al crear y si es admin
         if (userRole === 'administrador') {
             freeTimeBtn.style.display = 'block';
         }
-        // ... (resto de la lógica de creación se mantiene igual)
+        const fechaInicioObj = new Date(fechaInicio);
+        document.getElementById('fecha_inicio').value = formatarFechaParaInput(fechaInicioObj);
+        if (userRole === 'administrador') {
+            empleadoSelect.value = currentUser.id;
+            actualizarCamposAdmin();
+            consultorioSelect.value = '4';
+        }
     }
     
     actualizarCamposAdmin();
@@ -398,6 +416,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
