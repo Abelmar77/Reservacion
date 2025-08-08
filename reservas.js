@@ -7,6 +7,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let calendario, currentUser, userRole, idParaEliminar;
 let vistaActual = 'todos';
 let todasLasReservaciones = [], todosLosPerfiles = [];
+let ultimaFechaSeleccionada = new Date(); // Guardará la última fecha clickeada
 
 const modal = document.getElementById('evento-modal');
 const modalTitulo = document.getElementById('modal-titulo');
@@ -110,14 +111,15 @@ function filtrarYRenderizarEventos() {
 
 // --- MANEJADORES DE EVENTOS DEL CALENDARIO ---
 function handleDateClick(info) {
+    ultimaFechaSeleccionada = new Date(info.dateStr); // Guarda la fecha
     if (info.view.type === 'dayGridMonth') {
         calendario.changeView('timeGridDay', info.dateStr);
         return;
     }
     abrirModal(info.dateStr);
 }
-
 function handleTimeSelect(info) {
+    ultimaFechaSeleccionada = new Date(info.startStr); // Guarda la fecha
     abrirModal(info.startStr);
 }
 
@@ -339,8 +341,26 @@ function configurarEventListeners() {
     consultorioSelect.addEventListener('change', actualizarCamposAdmin);
     empleadoSelect.addEventListener('change', actualizarCamposAdmin);
 
-    freeTimeBtn.onclick = () => {
+ freeTimeBtn.onclick = () => {
         freeTimeForm.reset();
+
+        // --- LÓGICA AÑADIDA PARA PRE-RELLENAR FECHAS ---
+        const fechaInicioInput = document.getElementById('free-time-inicio');
+        const fechaFinInput = document.getElementById('free-time-fin');
+
+        // Usa la última fecha seleccionada y la establece a las 8:00 AM
+        const fechaInicioObj = new Date(ultimaFechaSeleccionada);
+        fechaInicioObj.setHours(8, 0, 0, 0);
+        
+        // La fecha de fin la establece a las 10:00 PM del mismo día
+        const fechaFinObj = new Date(ultimaFechaSeleccionada);
+        fechaFinObj.setHours(22, 0, 0, 0);
+
+        // Asigna los valores a los campos del formulario
+        fechaInicioInput.value = formatarFechaParaInput(fechaInicioObj);
+        fechaFinInput.value = formatarFechaParaInput(fechaFinObj);
+        // --- FIN DE LA LÓGICA AÑADIDA ---
+        
         freeTimeModal.style.display = 'block';
     };
 
@@ -378,6 +398,7 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
 
 
