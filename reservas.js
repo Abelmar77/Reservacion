@@ -128,6 +128,7 @@ function handleEventClick(info) {
     abrirModal(null, info.event);
 }
 
+// Reemplaza la función existente con esta
 async function handleEventDrop(info) {
     const confirmacion = await mostrarConfirmacion("¿Estás seguro de que quieres mover esta reservación?");
     if (!confirmacion) {
@@ -143,6 +144,24 @@ async function handleEventDrop(info) {
         await cargarTodasLasReservaciones();
         filtrarYRenderizarEventos();
     }
+}
+
+// Añade esta nueva función a tu archivo
+function mostrarConfirmacion(mensaje) {
+    return new Promise((resolve) => {
+        const confirmarMensaje = confirmarModal.querySelector('p');
+        confirmarMensaje.textContent = mensaje;
+        confirmarModal.style.display = 'block';
+
+        confirmarEliminarBtn.onclick = () => {
+            confirmarModal.style.display = 'none';
+            resolve(true); // El usuario hizo clic en "Sí, Eliminar"
+        };
+        cancelarEliminarBtn.onclick = () => {
+            confirmarModal.style.display = 'none';
+            resolve(false); // El usuario hizo clic en "Cancelar"
+        };
+    });
 }
 
 // --- LÓGICA DE MODALES ---
@@ -281,9 +300,23 @@ async function handleFormSubmit(e) {
     }
 }
 
-function handleEliminar() {
+// Reemplaza la función existente con esta
+async function handleEliminar() {
     idParaEliminar = document.getElementById('id_reservacion').value;
-    if (idParaEliminar) confirmarModal.style.display = 'block';
+    if (idParaEliminar) {
+        const confirmado = await mostrarConfirmacion("¿Estás seguro de que quieres eliminar esta reservación? Esta acción es irreversible.");
+        if (confirmado) {
+            const { error } = await supabaseClient.from('reservaciones').delete().eq('id', idParaEliminar);
+            if (error) {
+                mostrarAlerta("Error al eliminar: " + error.message);
+            } else {
+                cerrarModal();
+                await cargarTodasLasReservaciones();
+                filtrarYRenderizarEventos();
+            }
+            idParaEliminar = null;
+        }
+    }
 }
 
 async function handleLogout(event) {
@@ -292,71 +325,22 @@ async function handleLogout(event) {
     window.location.href = 'index.html';
 }
 
+// Reemplaza la función existente con esta
 function configurarEventListeners() {
-    // Listeners para cerrar los modales
     cerrarModalBtn.onclick = cerrarModal;
     alertaCerrarBtn.onclick = cerrarAlerta;
-    cancelarEliminarBtn.onclick = () => { confirmarModal.style.display = 'none'; idParaEliminar = null; };
-  cerrarFreeTimeModalBtn.onclick = () => {
-        freeTimeModal.style.display = 'none';
-    };
-    // Listener para confirmar una eliminación
-    confirmarEliminarBtn.onclick = async () => {
-        if (!idParaEliminar) return;
-        const { error } = await supabaseClient.from('reservaciones').delete().eq('id', idParaEliminar);
-        confirmarModal.style.display = 'none';
-        if (error) {
-            mostrarAlerta("Error al eliminar: " + error.message);
-        } else {
-            cerrarModal(); // Cierra también el modal de edición
-            await cargarTodasLasReservaciones();
-            filtrarYRenderizarEventos();
-        }
-        idParaEliminar = null;
-    };
+    
+    // Estos listeners para el modal de confirmación se manejan ahora dentro de la función mostrarConfirmacion
+    // por lo que ya no son necesarios aquí.
 
-    // Listener para cerrar modales haciendo clic fuera de ellos
-  window.onclick = (event) => {
+    window.onclick = (event) => {
         if (event.target == modal) cerrarModal();
         if (event.target == alertaModal) cerrarAlerta();
         if (event.target == confirmarModal) confirmarModal.style.display = 'none';
         if (event.target == freeTimeModal) freeTimeModal.style.display = 'none';
     };
 
-    // Listeners de formularios
     eventoForm.onsubmit = handleFormSubmit;
-   freeTimeForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const fechaInicio = document.getElementById('free-time-inicio').value;
-        const fechaFin = document.getElementById('free-time-fin').value;
-
-        if (!fechaInicio || !fechaFin) {
-            mostrarAlerta('Debes seleccionar una hora de inicio y de fin.');
-            return;
-        }
-
-        const datosBloqueo = {
-            titulo: 'Free time',
-            id_consultorio: 4, // ID de "Online"
-            fecha_inicio: new Date(fechaInicio).toISOString(),
-            fecha_fin: new Date(fechaFin).toISOString(),
-            id_empleado: currentUser.id,
-            oculto: true,
-        };
-
-        const { error } = await supabaseClient.from('reservaciones').insert(datosBloqueo);
-
-        if (error) {
-            mostrarAlerta("Error al bloquear el horario: " + error.message);
-        } else {
-            freeTimeModal.style.display = 'none';
-            mostrarAlerta('El horario ha sido bloqueado exitosamente.');
-            await cargarTodasLasReservaciones();
-            filtrarYRenderizarEventos();
-        }
-    };
-
-    // Listeners de botones principales
     eliminarBtn.onclick = handleEliminar;
     logoutBtn.addEventListener('click', handleLogout);
     nuevaReservaBtn.onclick = () => abrirModal(new Date());
@@ -365,16 +349,41 @@ function configurarEventListeners() {
         toggleViewBtn.textContent = (vistaActual === 'todos') ? 'Ver solo mis reservaciones' : 'Ver todas las reservaciones';
         filtrarYRenderizarEventos();
     };
+    
+    const consultorioSelect = document.getElementById('id_consultorio');
+    const empleadoSelect = document.getElementById('id_empleado_seleccionado');
+    consultorioSelect.addEventListener('change', actualizarCamposAdmin);
+    empleadoSelect.addEventListener('change', actualizarCamposAdmin);
+
     freeTimeBtn.onclick = () => {
         freeTimeForm.reset();
         freeTimeModal.style.display = 'block';
     };
 
-    // Listeners de selectores para administradores
-    const consultorioSelect = document.getElementById('id_consultorio');
-    const empleadoSelect = document.getElementById('id_empleado_seleccionado');
-    consultorioSelect.addEventListener('change', actualizarCamposAdmin);
-    empleadoSelect.addEventListener('change', actualizarCamposAdmin);
+    cerrarFreeTimeModalBtn.onclick = () => {
+        freeTimeModal.style.display = 'none';
+    };
+
+    freeTimeForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const fechaInicio = document.getElementById('free-time-inicio').value;
+        const fechaFin = document.getElementById('free-time-fin').value;
+        if (!fechaInicio || !fechaFin) { mostrarAlerta('Debes seleccionar una hora de inicio y de fin.'); return; }
+        const datosBloqueo = {
+            titulo: 'Free time', id_consultorio: 4,
+            fecha_inicio: new Date(fechaInicio).toISOString(),
+            fecha_fin: new Date(fechaFin).toISOString(),
+            id_empleado: currentUser.id, oculto: true,
+        };
+        const { error } = await supabaseClient.from('reservaciones').insert(datosBloqueo);
+        if (error) { mostrarAlerta("Error al bloquear el horario: " + error.message); }
+        else {
+            freeTimeModal.style.display = 'none';
+            mostrarAlerta('El horario ha sido bloqueado exitosamente.');
+            await cargarTodasLasReservaciones();
+            filtrarYRenderizarEventos();
+        }
+    };
 }
 
 
@@ -385,4 +394,5 @@ function formatarFechaParaInput(fecha) {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
 
